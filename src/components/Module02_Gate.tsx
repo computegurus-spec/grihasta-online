@@ -1,0 +1,487 @@
+import React, { useState } from 'react';
+import type { VisitorLog, DeliveryLog, UserRole } from '../types';
+import { StorageEngine } from '../services/storage';
+import { QrCode, Truck, LogOut, Plus, Share2 } from 'lucide-react';
+
+interface Props {
+  role: UserRole;
+}
+
+export const Module02_Gate: React.FC<Props> = ({ role: _role }) => {
+  const [visitorLogs, setVisitorLogs] = useState<VisitorLog[]>(StorageEngine.getVisitorLogs());
+  const [deliveries, setDeliveries] = useState<DeliveryLog[]>(StorageEngine.getDeliveries());
+  const [activeTab, setActiveTab] = useState<'visitors' | 'deliveries' | 'pass_generator'>('visitors');
+
+  // New Visitor Check-In Form
+  const [isVisitorModalOpen, setIsVisitorModalOpen] = useState(false);
+  const [newVisitor, setNewVisitor] = useState({
+    visitorName: '',
+    phone: '',
+    flatId: 'A-101',
+    purpose: 'Guest' as const,
+    vehicleNo: ''
+  });
+
+  // Pre-approved Pass Modal (Resident feature)
+  const [isPassModalOpen, setIsPassModalOpen] = useState(false);
+  const [generatedPass, setGeneratedPass] = useState<{ passCode: string; visitorName: string; flatId: string } | null>(null);
+
+  // Delivery Modal
+  const [isDeliveryModalOpen, setIsDeliveryModalOpen] = useState(false);
+  const [newDelivery, setNewDelivery] = useState({
+    provider: 'Amazon' as const,
+    flatId: 'A-101',
+    executiveName: '',
+    phone: '',
+    status: 'Delivered to Door' as const,
+    packageCount: 1
+  });
+
+  const flats = StorageEngine.getFlats();
+
+  const handleCheckInVisitor = (e: React.FormEvent) => {
+    e.preventDefault();
+    const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const log: VisitorLog = {
+      id: `VIS-${Date.now().toString().slice(-4)}`,
+      visitorName: newVisitor.visitorName,
+      phone: newVisitor.phone,
+      flatId: newVisitor.flatId,
+      purpose: newVisitor.purpose,
+      passCode: `VP-${Math.floor(1000 + Math.random() * 9000)}`,
+      entryTime: timeNow,
+      status: 'Checked-In',
+      vehicleNo: newVisitor.vehicleNo
+    };
+
+    const updated = [log, ...visitorLogs];
+    setVisitorLogs(updated);
+    StorageEngine.saveVisitorLogs(updated);
+    setIsVisitorModalOpen(false);
+  };
+
+  const handleCheckOut = (id: string) => {
+    const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const updated = visitorLogs.map(v => v.id === id ? { ...v, status: 'Checked-Out' as const, exitTime: timeNow } : v);
+    setVisitorLogs(updated);
+    StorageEngine.saveVisitorLogs(updated);
+  };
+
+  const handleGeneratePass = (e: React.FormEvent) => {
+    e.preventDefault();
+    const code = `VP-${Math.floor(1000 + Math.random() * 9000)}`;
+    const passObj = {
+      passCode: code,
+      visitorName: newVisitor.visitorName || 'Expected Guest',
+      flatId: newVisitor.flatId
+    };
+    setGeneratedPass(passObj);
+
+    // Also add to pre-approved logs
+    const log: VisitorLog = {
+      id: `VIS-${Date.now().toString().slice(-4)}`,
+      visitorName: newVisitor.visitorName || 'Expected Guest',
+      phone: newVisitor.phone || '-',
+      flatId: newVisitor.flatId,
+      purpose: 'Guest',
+      passCode: code,
+      entryTime: 'Pending Entry',
+      status: 'Pre-Approved',
+      approvedBy: 'Resident'
+    };
+    const updated = [log, ...visitorLogs];
+    setVisitorLogs(updated);
+    StorageEngine.saveVisitorLogs(updated);
+  };
+
+  const handleAddDelivery = (e: React.FormEvent) => {
+    e.preventDefault();
+    const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const del: DeliveryLog = {
+      id: `DEL-${Date.now().toString().slice(-4)}`,
+      provider: newDelivery.provider,
+      flatId: newDelivery.flatId,
+      executiveName: newDelivery.executiveName,
+      phone: newDelivery.phone,
+      entryTime: timeNow,
+      status: newDelivery.status,
+      packageCount: Number(newDelivery.packageCount)
+    };
+    const updated = [del, ...deliveries];
+    setDeliveries(updated);
+    StorageEngine.saveDeliveries(updated);
+    setIsDeliveryModalOpen(false);
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      {/* Module Banner */}
+      <div className="card card-sage" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+        <div>
+          <span className="badge badge-sage" style={{ marginBottom: '0.4rem' }}>MODULE 02</span>
+          <h2>🛡️ Security & Gate Management</h2>
+          <p style={{ fontSize: '0.9rem', color: '#031D34' }}>
+            Digital gate entry log, pre-approved visitor passes with QR codes, and delivery tracking.
+          </p>
+        </div>
+
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button onClick={() => setIsVisitorModalOpen(true)} className="btn btn-primary">
+            <Plus size={16} /> Log Gate Entry
+          </button>
+          <button onClick={() => setIsPassModalOpen(true)} className="btn btn-amber">
+            <QrCode size={16} /> Pre-Approve Visitor Pass
+          </button>
+          <button onClick={() => setIsDeliveryModalOpen(true)} className="btn btn-secondary">
+            <Truck size={16} /> Log Delivery
+          </button>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div style={{ display: 'flex', borderBottom: '2px solid #CBD5E1', gap: '1.5rem' }}>
+        <button
+          onClick={() => setActiveTab('visitors')}
+          style={{
+            background: 'none', border: 'none', padding: '0.6rem 0.2rem', fontWeight: 700, fontSize: '0.95rem',
+            borderBottom: activeTab === 'visitors' ? '3px solid #0B4769' : 'none',
+            color: activeTab === 'visitors' ? '#0B4769' : '#64748B', cursor: 'pointer'
+          }}
+        >
+          Gate Visitor Logs ({visitorLogs.length})
+        </button>
+        <button
+          onClick={() => setActiveTab('deliveries')}
+          style={{
+            background: 'none', border: 'none', padding: '0.6rem 0.2rem', fontWeight: 700, fontSize: '0.95rem',
+            borderBottom: activeTab === 'deliveries' ? '3px solid #0B4769' : 'none',
+            color: activeTab === 'deliveries' ? '#0B4769' : '#64748B', cursor: 'pointer'
+          }}
+        >
+          Delivery Tracker ({deliveries.length})
+        </button>
+      </div>
+
+      {/* VISITORS TAB */}
+      {activeTab === 'visitors' && (
+        <div className="card">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <h3>📋 Active & Recent Gate Visitor Entries</h3>
+            <span className="badge badge-paid">Main Entrance Gate Operational</span>
+          </div>
+
+          <div className="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Pass Code</th>
+                  <th>Visitor Name</th>
+                  <th>Flat ID</th>
+                  <th>Purpose</th>
+                  <th>Vehicle No</th>
+                  <th>Check-In Time</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {visitorLogs.map((v) => (
+                  <tr key={v.id}>
+                    <td><strong style={{ color: '#0B4769' }}>{v.passCode || '-'}</strong></td>
+                    <td>
+                      <strong>{v.visitorName}</strong>
+                      <div style={{ fontSize: '0.75rem', color: '#64748B' }}>{v.phone}</div>
+                    </td>
+                    <td><span className="badge badge-ocean">{v.flatId}</span></td>
+                    <td>{v.purpose}</td>
+                    <td>{v.vehicleNo || 'Walk-in'}</td>
+                    <td>{v.entryTime}</td>
+                    <td>
+                      <span className={`badge ${v.status === 'Checked-In' ? 'badge-paid' : v.status === 'Pre-Approved' ? 'badge-amber' : 'badge-pending'}`}>
+                        {v.status} {v.exitTime ? `(Out: ${v.exitTime})` : ''}
+                      </span>
+                    </td>
+                    <td>
+                      {v.status === 'Checked-In' && (
+                        <button onClick={() => handleCheckOut(v.id)} className="btn btn-sm btn-outline" style={{ borderColor: '#991B1B', color: '#991B1B' }}>
+                          <LogOut size={12} /> Mark Exit
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* DELIVERIES TAB */}
+      {activeTab === 'deliveries' && (
+        <div className="card">
+          <h3>🚚 Package & Delivery Logs</h3>
+          <div className="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Provider</th>
+                  <th>Flat ID</th>
+                  <th>Executive Name</th>
+                  <th>Phone</th>
+                  <th>Time</th>
+                  <th>Packages</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {deliveries.map((d) => (
+                  <tr key={d.id}>
+                    <td><strong style={{ color: '#1E6B85' }}>{d.provider}</strong></td>
+                    <td><span className="badge badge-ocean">{d.flatId}</span></td>
+                    <td>{d.executiveName}</td>
+                    <td>{d.phone}</td>
+                    <td>{d.entryTime}</td>
+                    <td>{d.packageCount} PKG</td>
+                    <td>
+                      <span className={`badge ${d.status === 'Delivered to Door' ? 'badge-paid' : 'badge-amber'}`}>
+                        {d.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: CHECK-IN VISITOR */}
+      {isVisitorModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h3>Log New Visitor at Main Gate</h3>
+              <button onClick={() => setIsVisitorModalOpen(false)} style={{ color: '#FFF', background: 'none', border: 'none', cursor: 'pointer' }}>X</button>
+            </div>
+            <form onSubmit={handleCheckInVisitor} className="modal-body">
+              <div className="form-group">
+                <label>Visitor Name</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Visitor full name"
+                  className="form-control"
+                  value={newVisitor.visitorName}
+                  onChange={(e) => setNewVisitor({ ...newVisitor, visitorName: e.target.value })}
+                />
+              </div>
+
+              <div className="grid-2">
+                <div className="form-group">
+                  <label>Phone Number</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="+91 99000 00000"
+                    className="form-control"
+                    value={newVisitor.phone}
+                    onChange={(e) => setNewVisitor({ ...newVisitor, phone: e.target.value })}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Destination Flat</label>
+                  <select
+                    className="form-control"
+                    value={newVisitor.flatId}
+                    onChange={(e) => setNewVisitor({ ...newVisitor, flatId: e.target.value })}
+                  >
+                    {flats.map(f => (
+                      <option key={f.id} value={f.id}>{f.id} - {f.ownerName}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid-2">
+                <div className="form-group">
+                  <label>Purpose</label>
+                  <select
+                    className="form-control"
+                    value={newVisitor.purpose}
+                    onChange={(e) => setNewVisitor({ ...newVisitor, purpose: e.target.value as any })}
+                  >
+                    <option value="Guest">Guest</option>
+                    <option value="Delivery">Delivery</option>
+                    <option value="Service Technician">Service Technician</option>
+                    <option value="Cab">Cab / Uber / Ola</option>
+                    <option value="Official">Official</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Vehicle Reg No (If any)</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. KA-03-AB-1234"
+                    className="form-control"
+                    value={newVisitor.vehicleNo}
+                    onChange={(e) => setNewVisitor({ ...newVisitor, vehicleNo: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }}>
+                Verify & Approve Gate Entry
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: RESIDENT PRE-APPROVED PASS GENERATOR */}
+      {isPassModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h3>Generate Resident Pre-Approved Visitor Pass</h3>
+              <button onClick={() => setIsPassModalOpen(false)} style={{ color: '#FFF', background: 'none', border: 'none', cursor: 'pointer' }}>X</button>
+            </div>
+            <div className="modal-body">
+              {!generatedPass ? (
+                <form onSubmit={handleGeneratePass}>
+                  <div className="form-group">
+                    <label>Guest Name</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Rajesh Kumar"
+                      className="form-control"
+                      value={newVisitor.visitorName}
+                      onChange={(e) => setNewVisitor({ ...newVisitor, visitorName: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Your Flat</label>
+                    <select
+                      className="form-control"
+                      value={newVisitor.flatId}
+                      onChange={(e) => setNewVisitor({ ...newVisitor, flatId: e.target.value })}
+                    >
+                      {flats.map(f => (
+                        <option key={f.id} value={f.id}>{f.id} - {f.ownerName}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <button type="submit" className="btn btn-amber" style={{ width: '100%', marginTop: '1rem' }}>
+                    Generate Pass & QR Code
+                  </button>
+                </form>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '1rem 0' }}>
+                  <div style={{ background: '#F8FAFC', padding: '1.5rem', borderRadius: '12px', border: '2px dashed #0B4769', display: 'inline-block', width: '100%', maxWidth: '320px' }}>
+                    <h4 style={{ color: '#0B4769' }}>ARTHA GRIHASTA GATE PASS</h4>
+                    <span className="badge badge-amber" style={{ margin: '0.5rem 0' }}>VALID FOR ENTRY TODAY</span>
+                    <div style={{ background: '#031D34', color: '#E9BB76', padding: '0.75rem', borderRadius: '8px', fontSize: '1.5rem', fontWeight: 800, margin: '1rem 0', letterSpacing: '2px' }}>
+                      {generatedPass.passCode}
+                    </div>
+                    <p style={{ fontWeight: 700 }}>Guest: {generatedPass.visitorName}</p>
+                    <p style={{ fontSize: '0.85rem', color: '#64748B' }}>Destination: Flat {generatedPass.flatId}</p>
+
+                    {/* QR Placeholder */}
+                    <div style={{ background: '#FFF', padding: '0.75rem', border: '1px solid #CBD5E1', borderRadius: '8px', marginTop: '1rem', display: 'inline-block' }}>
+                      <QrCode size={120} style={{ color: '#031D34' }} />
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', marginTop: '1.25rem' }}>
+                    <button
+                      onClick={() => alert(`Pass code ${generatedPass.passCode} copied to clipboard to share on WhatsApp!`)}
+                      className="btn btn-accent"
+                    >
+                      <Share2 size={16} /> Share via WhatsApp
+                    </button>
+                    <button onClick={() => setGeneratedPass(null)} className="btn btn-outline">
+                      Create Another
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: ADD DELIVERY */}
+      {isDeliveryModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h3>Log Delivery Arrival</h3>
+              <button onClick={() => setIsDeliveryModalOpen(false)} style={{ color: '#FFF', background: 'none', border: 'none', cursor: 'pointer' }}>X</button>
+            </div>
+            <form onSubmit={handleAddDelivery} className="modal-body">
+              <div className="grid-2">
+                <div className="form-group">
+                  <label>Provider</label>
+                  <select
+                    className="form-control"
+                    value={newDelivery.provider}
+                    onChange={(e) => setNewDelivery({ ...newDelivery, provider: e.target.value as any })}
+                  >
+                    <option value="Amazon">Amazon</option>
+                    <option value="Swiggy">Swiggy</option>
+                    <option value="Zomato">Zomato</option>
+                    <option value="Flipkart">Flipkart</option>
+                    <option value="Blinkit">Blinkit</option>
+                    <option value="Courier">Courier</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Target Flat</label>
+                  <select
+                    className="form-control"
+                    value={newDelivery.flatId}
+                    onChange={(e) => setNewDelivery({ ...newDelivery, flatId: e.target.value })}
+                  >
+                    {flats.map(f => (
+                      <option key={f.id} value={f.id}>{f.id} - {f.ownerName}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid-2">
+                <div className="form-group">
+                  <label>Executive Name</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Name"
+                    className="form-control"
+                    value={newDelivery.executiveName}
+                    onChange={(e) => setNewDelivery({ ...newDelivery, executiveName: e.target.value })}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Executive Phone</label>
+                  <input
+                    type="text"
+                    placeholder="+91 99000 00000"
+                    className="form-control"
+                    value={newDelivery.phone}
+                    onChange={(e) => setNewDelivery({ ...newDelivery, phone: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <button type="submit" className="btn btn-secondary" style={{ width: '100%', marginTop: '1rem' }}>
+                Record Delivery
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
