@@ -61,7 +61,7 @@ export function App() {
               </h1>
 
               <p style={{ fontSize: '1rem', color: '#EFEED2', opacity: 0.9, lineHeight: 1.5 }}>
-                A digital portal built for <strong>Artha Grihasta</strong> residents, MC committee, security gate guards, and maintenance staff. No app download required — works on any smartphone or browser.
+                A digital portal built for <strong>Grihasta</strong> residents, MC committee, security gate guards, and maintenance staff. No app download required — works on any smartphone or browser.
               </p>
             </div>
 
@@ -109,7 +109,7 @@ export function App() {
           <div>
             <h3 style={{ color: '#E9BB76', fontSize: '1.2rem', marginBottom: '0.25rem' }}>grihasta.online</h3>
             <p style={{ fontSize: '0.85rem', opacity: 0.8 }}>
-              Artha Grihasta Residential Layout · Management Portal
+              Grihasta Residential Layout · Management Portal
             </p>
           </div>
 

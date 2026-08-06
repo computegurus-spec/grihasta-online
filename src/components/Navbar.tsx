@@ -200,7 +200,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span style={{ fontWeight: 800, fontSize: '1.1rem', letterSpacing: '0.5px' }}>
               grihasta<span style={{ color: '#E9BB76' }}>.online</span>
             </span>
-            <span className="badge badge-amber" style={{ fontSize: '0.7rem' }}>Artha Layout</span>
+            <span className="badge badge-amber" style={{ fontSize: '0.7rem' }}>Grihasta Layout</span>
           </div>
 
           {/* Active Module Breadcrumb Pill */}

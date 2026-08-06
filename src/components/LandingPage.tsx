@@ -19,7 +19,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterPortal }) => {
   }, []);
 
   const projectFacts = [
-    { label: 'Developer', value: 'Artha Group' },
+    { label: 'Layout', value: 'Grihasta' },
     { label: 'Total Area', value: '40 Acres' },
     { label: 'Total Units', value: '400 Villas' },
     { label: 'Status', value: 'Ready to Move' },
@@ -81,7 +81,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterPortal }) => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
           <Building2 size={22} style={{ color: '#E9BB76' }} />
           <span style={{ fontWeight: 800, fontSize: '1.1rem', color: '#FFF', letterSpacing: '0.5px' }}>
-            Artha Grihasta
+            Grihasta
           </span>
           <span style={{
             background: 'rgba(233,187,118,0.18)', border: '1px solid rgba(233,187,118,0.35)',
@@ -146,14 +146,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterPortal }) => {
             color: '#FFFFFF', fontSize: 'clamp(2.8rem, 7vw, 4.5rem)', fontWeight: 900,
             lineHeight: 1.05, marginBottom: '1.1rem', letterSpacing: '-1px'
           }}>
-            Artha Grihasta<br />
+            Grihasta<br />
             <span style={{ color: '#E9BB76', fontSize: '0.55em', fontWeight: 600, letterSpacing: '0px' }}>
               Premium Gated Villa Layout · 40 Acres · 400 Homes
             </span>
           </h1>
 
           <p style={{ color: '#EFEED2', fontSize: '1.1rem', lineHeight: 1.8, marginBottom: '0.85rem', opacity: 0.95, maxWidth: '680px', margin: '0 auto 0.85rem auto' }}>
-            A premium gated residential layout by <strong>Artha Group</strong> offering an enriching quality of life for your family — surrounded by natural greens, world-class amenities, and a warm, connected community in the serene surroundings of Malur, Kolar.
+            A premium gated residential layout offering an enriching quality of life for your family — surrounded by natural greens, world-class amenities, and a warm, connected community in the serene surroundings of Malur, Kolar.
           </p>
 
           <p style={{ color: '#D2E0B0', fontSize: '0.92rem', lineHeight: 1.65, marginBottom: '2.5rem', opacity: 0.85, maxWidth: '580px', margin: '0 auto 2.5rem auto' }}>
@@ -205,12 +205,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterPortal }) => {
       <section style={{ background: '#EFEED2', padding: '5rem 2rem' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-            <span style={{ color: '#1E6B85', fontSize: '0.78rem', fontWeight: 700, letterSpacing: '2.5px', textTransform: 'uppercase' }}>Why Choose Artha Grihasta</span>
+            <span style={{ color: '#1E6B85', fontSize: '0.78rem', fontWeight: 700, letterSpacing: '2.5px', textTransform: 'uppercase' }}>Why Choose Grihasta</span>
             <h2 style={{ fontSize: 'clamp(1.8rem, 4vw, 2.6rem)', fontWeight: 800, color: '#031D34', margin: '0.5rem 0 0.75rem' }}>
               Where community meets comfort
             </h2>
             <p style={{ color: '#475569', fontSize: '1rem', maxWidth: '560px', margin: '0 auto', lineHeight: 1.7 }}>
-              More than just homes — Artha Grihasta is a thriving neighbourhood on 40 acres of planned green space in Malur, built on trust, shared values and sylvan living.
+              More than just homes — Grihasta is a thriving neighbourhood on 40 acres of planned green space in Malur, built on trust, shared values and sylvan living.
             </p>
           </div>
 
@@ -331,12 +331,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterPortal }) => {
             color: '#EFEED2', fontSize: 'clamp(1rem, 2.5vw, 1.25rem)', lineHeight: 1.85,
             fontStyle: 'italic', fontWeight: 400, marginBottom: '1.5rem'
           }}>
-            As a proud resident of Artha Grihasta community, you have the additional satisfaction of knowing that an enriching quality of life exists for you and your family in the sylvan surroundings of our layout. We trust that your stay here will be comfortable, enjoyable and memorable.
+            As a proud resident of Grihasta community, you have the additional satisfaction of knowing that an enriching quality of life exists for you and your family in the sylvan surroundings of our layout. We trust that your stay here will be comfortable, enjoyable and memorable.
           </p>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem' }}>
             <div style={{ width: '40px', height: '2px', background: '#E9BB76', opacity: 0.4 }} />
             <span style={{ color: '#E9BB76', fontWeight: 700, fontSize: '0.875rem' }}>
-              Management Committee, Artha Grihasta Layout
+              Management Committee, Grihasta Layout
             </span>
             <div style={{ width: '40px', height: '2px', background: '#E9BB76', opacity: 0.4 }} />
           </div>
@@ -352,7 +352,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterPortal }) => {
               Manage your layout, digitally
             </h2>
             <p style={{ color: '#475569', fontSize: '1rem', maxWidth: '560px', margin: '0 auto', lineHeight: 1.7 }}>
-              Artha Grihasta residents enjoy a fully digital management portal — gate, maintenance, amenities, complaints and community — all in one place. No app download needed.
+              Grihasta residents enjoy a fully digital management portal — gate, maintenance, amenities, complaints and community — all in one place. No app download needed.
             </p>
           </div>
 
@@ -409,13 +409,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterPortal }) => {
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1rem' }}>
                 <Building2 size={20} style={{ color: '#E9BB76' }} />
-                <span style={{ fontWeight: 800, fontSize: '1.15rem', color: '#FFF' }}>Artha Grihasta</span>
+                <span style={{ fontWeight: 800, fontSize: '1.15rem', color: '#FFF' }}>Grihasta</span>
               </div>
               <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.875rem', lineHeight: 1.75, marginBottom: '1rem' }}>
-                A premium gated villa community by Artha Group in Malur, Kolar, Karnataka. 40 acres · 400 homes · Rated 3.9★.
+                A premium gated villa community in Malur, Kolar, Karnataka. 40 acres · 400 homes · Rated 3.9★.
               </p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
-                {['Artha Group', '40 Acres', '400 Villas', 'Ready to Move', 'Malur, Kolar'].map((t, i) => (
+                {['Grihasta Layout', '40 Acres', '400 Villas', 'Ready to Move', 'Malur, Kolar'].map((t, i) => (
                   <span key={i} style={{
                     background: 'rgba(233,187,118,0.1)', border: '1px solid rgba(233,187,118,0.18)',
                     color: '#E9BB76', fontSize: '0.68rem', fontWeight: 600, padding: '0.18rem 0.55rem', borderRadius: '4px'
@@ -433,7 +433,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterPortal }) => {
                   { label: '→ Villa Configurations', href: '#villas' },
                   { label: '→ Amenities', href: '#amenities' },
                   { label: '→ Resident Portal', href: '#portal' },
-                  { label: '→ View on MagicBricks', href: 'https://www.magicbricks.com/artha-grihasta-malur-kolar-pdpid-4d4235303037373133' },
                 ].map((l, i) => (
                   <a key={i} href={l.href} target={l.href.startsWith('http') ? '_blank' : undefined} rel="noopener noreferrer" style={{
                     color: 'rgba(255,255,255,0.55)', fontSize: '0.875rem', textDecoration: 'none', transition: 'color 0.15s ease'
@@ -478,7 +477,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterPortal }) => {
             display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem'
           }}>
             <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.78rem' }}>
-              © 2026 Artha Grihasta · grihasta.online · Malur, Kolar, Karnataka
+              © 2026 Grihasta · grihasta.online · Malur, Kolar, Karnataka
             </span>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
               <CheckCircle size={11} style={{ color: '#31532C' }} />

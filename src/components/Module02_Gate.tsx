@@ -383,7 +383,7 @@ export const Module02_Gate: React.FC<Props> = ({ role: _role }) => {
               ) : (
                 <div style={{ textAlign: 'center', padding: '1rem 0' }}>
                   <div style={{ background: '#F8FAFC', padding: '1.5rem', borderRadius: '12px', border: '2px dashed #0B4769', display: 'inline-block', width: '100%', maxWidth: '320px' }}>
-                    <h4 style={{ color: '#0B4769' }}>ARTHA GRIHASTA GATE PASS</h4>
+                    <h4 style={{ color: '#0B4769' }}>GRIHASTA GATE PASS</h4>
                     <span className="badge badge-amber" style={{ margin: '0.5rem 0' }}>VALID FOR ENTRY TODAY</span>
                     <div style={{ background: '#031D34', color: '#E9BB76', padding: '0.75rem', borderRadius: '8px', fontSize: '1.5rem', fontWeight: 800, margin: '1rem 0', letterSpacing: '2px' }}>
                       {generatedPass.passCode}

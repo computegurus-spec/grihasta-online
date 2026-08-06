@@ -15,7 +15,7 @@ export const ManualModal: React.FC<ManualModalProps> = ({ isOpen, onClose }) => 
         <div className="modal-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <BookOpen size={20} style={{ color: '#E9BB76' }} />
-            <h3>Artha Grihasta Resident Manual</h3>
+            <h3>Grihasta Resident Manual</h3>
           </div>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#FFF', cursor: 'pointer' }}>
             <X size={20} />
@@ -25,10 +25,10 @@ export const ManualModal: React.FC<ManualModalProps> = ({ isOpen, onClose }) => 
         <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           <div style={{ background: 'var(--color-sage-green)', padding: '1rem', borderRadius: '8px', border: '1px solid #31532C' }}>
             <h4 style={{ color: '#31532C', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
-              <HeartHandshake size={18} /> Welcome to Artha Grihasta Community
+              <HeartHandshake size={18} /> Welcome to Grihasta Community
             </h4>
             <p style={{ fontSize: '0.9rem', color: '#031D34' }}>
-              We are happy to welcome you to <strong>Artha Grihasta</strong> — a vibrant, eco-friendly residential layout community. As a resident, you enjoy a serene quality of life in our sylvan surroundings.
+              We are happy to welcome you to <strong>Grihasta</strong> — a vibrant, eco-friendly residential layout community. As a resident, you enjoy a serene quality of life in our sylvan surroundings.
             </p>
           </div>
 
