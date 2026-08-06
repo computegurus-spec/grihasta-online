@@ -19,8 +19,7 @@ import {
   Phone,
   Eye,
   EyeOff,
-  ThumbsUp,
-  CheckCircle2
+  ThumbsUp
 } from 'lucide-react';
 
 interface Props {
