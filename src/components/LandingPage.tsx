@@ -45,7 +45,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterPortal }) => {
   ];
 
   const communityValues = [
-    { icon: <Leaf size={22} style={{ color: '#31532C' }} />, title: 'Sylvan & Green', desc: 'Nestled in Malur's natural greens — a tranquil escape, yet connected to Bangalore' },
+    { icon: <Leaf size={22} style={{ color: '#31532C' }} />, title: 'Sylvan & Green', desc: "Nestled in Malur's natural greens — a tranquil escape, yet connected to Bangalore" },
     { icon: <Shield size={22} style={{ color: '#0B4769' }} />, title: 'Gated & Secure', desc: 'Digital gate management with visitor passes, delivery tracking and resident-only access' },
     { icon: <Star size={22} style={{ color: '#E9BB76' }} />, title: 'Vibrant Community', desc: 'Events, carpooling groups, interest clubs, resident marketplace — all within the layout' },
     { icon: <Sun size={22} style={{ color: '#1E6B85' }} />, title: 'Modern Infrastructure', desc: 'Underground utilities, BESCOM power, Cauvery water and well-maintained common areas' },
