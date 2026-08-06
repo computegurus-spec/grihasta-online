@@ -30,6 +30,7 @@ export interface Flat {
   sqft: number;
   quarterlyDuesRate: number; // ₹9,000 per quarter (Jan-Mar, Apr-Jun, Jul-Sep, Oct-Dec)
   registeredHelpCount: number;
+  ownerPhoto?: string; // Base64 data URL or remote photo URL
 }
 
 export interface DomesticHelp {
@@ -186,6 +187,7 @@ export interface ResidentSocialProfile {
   showPhoneToNeighbours: boolean;
   phone: string;
   avatarColor: string;
+  photoUrl?: string; // Base64 data URL or remote photo URL
 }
 
 export interface PostComment {

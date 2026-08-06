@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { Flat, DomesticHelp, UserRole } from '../types';
 import { StorageEngine } from '../services/storage';
-import { Plus, Search, Filter, Phone, Mail, UserPlus } from 'lucide-react';
+import { Plus, Search, Filter, Phone, Mail, UserPlus, Camera, Upload, User } from 'lucide-react';
 
 interface Props {
   role: UserRole;
@@ -19,20 +19,24 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
   const [isFlatModalOpen, setIsFlatModalOpen] = useState(false);
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
 
+  // Photo Edit Modal for existing flats
+  const [editingFlatPhoto, setEditingFlatPhoto] = useState<Flat | null>(null);
+
   // Lanes 1 to 15 list
   const lanesList = Array.from({ length: 15 }, (_, i) => `Lane ${i + 1}`);
 
   // New Flat Form State
   const [newFlat, setNewFlat] = useState({
     block: 'Lane 1',
-    floor: 1,
+    floor: 0,
     flatNumber: '',
     ownerName: '',
     ownerPhone: '',
     ownerEmail: '',
     occupancyType: 'Owner Occupied' as const,
     sqft: 2400,
-    quarterlyDuesRate: 9000
+    quarterlyDuesRate: 9000,
+    ownerPhoto: ''
   });
 
   // New Domestic Help Form State
@@ -44,7 +48,7 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
     passCode: `GH-${Math.floor(100 + Math.random() * 900)}`
   });
 
-  const canEdit = ['MC_ADMIN', 'MC_MEMBER'].includes(role);
+  const canEdit = ['MC_ADMIN', 'MC_MEMBER', 'RESIDENT_OWNER'].includes(role);
 
   const filteredFlats = flats.filter(f => {
     const matchesBlock = selectedBlock === 'ALL' || f.block === selectedBlock;
@@ -53,6 +57,23 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
                           (f.tenantName && f.tenantName.toLowerCase().includes(searchTerm.toLowerCase()));
     return matchesBlock && matchesSearch;
   });
+
+  const handlePhotoFileChange = (e: React.ChangeEvent<HTMLInputElement>, callback: (dataUrl: string) => void) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Please choose an image file under 5MB.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === 'string') {
+          callback(reader.result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleAddFlat = (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,12 +90,32 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
       occupancyType: newFlat.occupancyType,
       sqft: Number(newFlat.sqft),
       quarterlyDuesRate: Number(newFlat.quarterlyDuesRate),
-      registeredHelpCount: 0
+      registeredHelpCount: 0,
+      ownerPhoto: newFlat.ownerPhoto || undefined
     };
     const updated = [flatObj, ...flats];
     setFlats(updated);
     StorageEngine.saveFlats(updated);
     setIsFlatModalOpen(false);
+    setNewFlat({
+      block: 'Lane 1',
+      floor: 0,
+      flatNumber: '',
+      ownerName: '',
+      ownerPhone: '',
+      ownerEmail: '',
+      occupancyType: 'Owner Occupied',
+      sqft: 2400,
+      quarterlyDuesRate: 9000,
+      ownerPhoto: ''
+    });
+  };
+
+  const handleUpdateFlatPhoto = (flatId: string, photoUrl: string) => {
+    const updated = flats.map(f => f.id === flatId ? { ...f, ownerPhoto: photoUrl } : f);
+    setFlats(updated);
+    StorageEngine.saveFlats(updated);
+    setEditingFlatPhoto(null);
   };
 
   const handleAddHelp = (e: React.FormEvent) => {
@@ -228,20 +269,51 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
                     </span>
                   </div>
 
-                  <div style={{ background: '#F8FAFC', padding: '0.75rem', borderRadius: '8px', border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                    <div style={{ fontSize: '0.85rem' }}>
-                      <strong>Owner:</strong> {flat.ownerName}
-                    </div>
-                    <div style={{ fontSize: '0.8rem', color: '#64748B', display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}><Phone size={12} /> {flat.ownerPhone}</span>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}><Mail size={12} /> {flat.ownerEmail.split('@')[0]}</span>
+                  <div style={{ background: '#F8FAFC', padding: '0.75rem', borderRadius: '8px', border: '1px solid #E2E8F0', display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                    <div style={{ position: 'relative', flexShrink: 0 }}>
+                      {flat.ownerPhoto ? (
+                        <img
+                          src={flat.ownerPhoto}
+                          alt={flat.ownerName}
+                          style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #0B4769' }}
+                        />
+                      ) : (
+                        <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#0B4769', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '1.2rem' }}>
+                          {flat.ownerName.charAt(0) || 'O'}
+                        </div>
+                      )}
+                      {canEdit && (
+                        <button
+                          onClick={() => setEditingFlatPhoto(flat)}
+                          title="Upload Owner Photo"
+                          style={{
+                            position: 'absolute', bottom: '-4px', right: '-4px',
+                            background: '#E9BB76', color: '#031D34', border: '1px solid #FFF',
+                            borderRadius: '50%', width: '22px', height: '22px',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.15)'
+                          }}
+                        >
+                          <Camera size={12} />
+                        </button>
+                      )}
                     </div>
 
-                    {flat.tenantName && (
-                      <div style={{ borderTop: '1px dashed #CBD5E1', paddingTop: '0.35rem', marginTop: '0.35rem', fontSize: '0.85rem' }}>
-                        <strong>Tenant:</strong> {flat.tenantName} ({flat.tenantPhone})
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', flex: 1 }}>
+                      <div style={{ fontSize: '0.85rem' }}>
+                        <strong>Owner:</strong> {flat.ownerName}
                       </div>
-                    )}
+                      <div style={{ fontSize: '0.78rem', color: '#64748B', display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}><Phone size={11} /> {flat.ownerPhone}</span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}><Mail size={11} /> {flat.ownerEmail.split('@')[0]}</span>
+                      </div>
+
+                      {flat.tenantName && (
+                        <div style={{ borderTop: '1px dashed #CBD5E1', paddingTop: '0.25rem', marginTop: '0.25rem', fontSize: '0.8rem' }}>
+                          <strong>Tenant:</strong> {flat.tenantName} ({flat.tenantPhone})
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#475569', paddingTop: '0.2rem' }}>
@@ -392,10 +464,71 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
                 </div>
               </div>
 
+              <div className="form-group">
+                <label>Owner Profile Photo (Optional)</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  {newFlat.ownerPhoto ? (
+                    <img src={newFlat.ownerPhoto} alt="Owner Preview" style={{ width: '42px', height: '42px', borderRadius: '50%', objectFit: 'cover' }} />
+                  ) : (
+                    <div style={{ width: '42px', height: '42px', borderRadius: '50%', background: '#E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <User size={20} style={{ color: '#64748B' }} />
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="form-control"
+                    onChange={(e) => handlePhotoFileChange(e, (url) => setNewFlat({ ...newFlat, ownerPhoto: url }))}
+                  />
+                </div>
+              </div>
+
               <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }}>
                 Save Plot Record
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: EDIT OWNER PHOTO */}
+      {editingFlatPhoto && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ maxWidth: '440px' }}>
+            <div className="modal-header">
+              <h3>Upload Owner Photo — {editingFlatPhoto.id}</h3>
+              <button onClick={() => setEditingFlatPhoto(null)} style={{ color: '#FFF', background: 'none', border: 'none', cursor: 'pointer' }}>X</button>
+            </div>
+            <div className="modal-body" style={{ textAlign: 'center', padding: '1.5rem 1rem' }}>
+              <div style={{ marginBottom: '1.25rem' }}>
+                {editingFlatPhoto.ownerPhoto ? (
+                  <img
+                    src={editingFlatPhoto.ownerPhoto}
+                    alt={editingFlatPhoto.ownerName}
+                    style={{ width: '96px', height: '96px', borderRadius: '50%', objectFit: 'cover', border: '3px solid #0B4769', margin: '0 auto' }}
+                  />
+                ) : (
+                  <div style={{ width: '96px', height: '96px', borderRadius: '50%', background: '#0B4769', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem', fontWeight: 800, margin: '0 auto' }}>
+                    {editingFlatPhoto.ownerName.charAt(0)}
+                  </div>
+                )}
+                <div style={{ fontWeight: 700, fontSize: '1rem', marginTop: '0.5rem', color: '#031D34' }}>{editingFlatPhoto.ownerName}</div>
+                <div style={{ fontSize: '0.8rem', color: '#64748B' }}>{editingFlatPhoto.id}</div>
+              </div>
+
+              <div className="form-group">
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600 }}>Select New Profile Photo</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="form-control"
+                  onChange={(e) => handlePhotoFileChange(e, (url) => handleUpdateFlatPhoto(editingFlatPhoto.id, url))}
+                />
+                <p style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '0.4rem' }}>
+                  Supported formats: JPG, PNG, WEBP (Max 5MB). Photo will be stored in resident database.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       )}

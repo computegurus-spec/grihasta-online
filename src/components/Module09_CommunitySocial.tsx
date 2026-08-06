@@ -19,7 +19,8 @@ import {
   Phone,
   Eye,
   EyeOff,
-  ThumbsUp
+  ThumbsUp,
+  Camera
 } from 'lucide-react';
 
 interface Props {
@@ -574,9 +575,51 @@ export const Module09_CommunitySocial: React.FC<Props> = ({ role: _role }) => {
               <div key={p.id} className="card" style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-                    <div style={{ background: p.avatarColor, color: '#FFF', width: '48px', height: '48px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '1.2rem' }}>
-                      {p.name.charAt(0)}
+                    <div style={{ position: 'relative', flexShrink: 0 }}>
+                      {p.photoUrl ? (
+                        <img
+                          src={p.photoUrl}
+                          alt={p.name}
+                          style={{ width: '52px', height: '52px', borderRadius: '50%', objectFit: 'cover', border: `2px solid ${p.avatarColor}` }}
+                        />
+                      ) : (
+                        <div style={{ background: p.avatarColor, color: '#FFF', width: '52px', height: '52px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '1.2rem' }}>
+                          {p.name.charAt(0)}
+                        </div>
+                      )}
+                      <label
+                        title="Upload Profile Photo"
+                        style={{
+                          position: 'absolute', bottom: '-4px', right: '-4px',
+                          background: '#E9BB76', color: '#031D34', border: '1px solid #FFF',
+                          borderRadius: '50%', width: '22px', height: '22px',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.15)'
+                        }}
+                      >
+                        <Camera size={11} />
+                        <input
+                          type="file"
+                          accept="image/*"
+                          style={{ display: 'none' }}
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onloadend = () => {
+                                if (typeof reader.result === 'string') {
+                                  const updated = profiles.map(pr => pr.id === p.id ? { ...pr, photoUrl: reader.result as string } : pr);
+                                  setProfiles(updated);
+                                  StorageEngine.saveProfiles(updated);
+                                }
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                        />
+                      </label>
                     </div>
+
                     <div>
                       <h4 style={{ color: '#031D34', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                         {p.name}
