@@ -37,7 +37,7 @@ export const Module02_Gate: React.FC<Props> = ({ role: _role }) => {
     packageCount: 1
   });
 
-  const flats = StorageEngine.getFlats();
+
 
   const handleCheckInVisitor = (e: React.FormEvent) => {
     e.preventDefault();
