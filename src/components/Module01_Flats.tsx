@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import type { Flat, Vehicle, DomesticHelp, UserRole } from '../types';
+import type { Flat, DomesticHelp, UserRole } from '../types';
 import { StorageEngine } from '../services/storage';
-import { Car, Plus, Search, Filter, Phone, Mail, UserPlus } from 'lucide-react';
+import { Plus, Search, Filter, Phone, Mail, UserPlus } from 'lucide-react';
 
 interface Props {
   role: UserRole;
@@ -9,16 +9,14 @@ interface Props {
 
 export const Module01_Flats: React.FC<Props> = ({ role }) => {
   const [flats, setFlats] = useState<Flat[]>(StorageEngine.getFlats());
-  const [vehicles, setVehicles] = useState<Vehicle[]>(StorageEngine.getVehicles());
   const [domesticHelp, setDomesticHelp] = useState<DomesticHelp[]>(StorageEngine.getDomesticHelp());
   
   const [selectedBlock, setSelectedBlock] = useState<string>('ALL');
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<'flats' | 'vehicles' | 'domestic_help'>('flats');
+  const [activeTab, setActiveTab] = useState<'flats' | 'domestic_help'>('flats');
 
   // Modals
   const [isFlatModalOpen, setIsFlatModalOpen] = useState(false);
-  const [isVehicleModalOpen, setIsVehicleModalOpen] = useState(false);
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
 
   // Lanes 1 to 15 list
@@ -37,18 +35,9 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
     monthlyDuesRate: 3500
   });
 
-  // New Vehicle Form State
-  const [newVehicle, setNewVehicle] = useState({
-    flatId: 'L01-P12',
-    type: 'Car' as const,
-    registrationNumber: '',
-    parkingSlot: '',
-    ownerName: ''
-  });
-
   // New Domestic Help Form State
   const [newHelp, setNewHelp] = useState({
-    flatId: 'L01-P12',
+    flatId: '',
     name: '',
     role: 'Maid' as const,
     phone: '',
@@ -80,7 +69,6 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
       occupancyType: newFlat.occupancyType,
       sqft: Number(newFlat.sqft),
       monthlyDuesRate: Number(newFlat.monthlyDuesRate),
-      vehiclesCount: 0,
       registeredHelpCount: 0
     };
     const updated = [flatObj, ...flats];
@@ -89,30 +77,9 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
     setIsFlatModalOpen(false);
   };
 
-  const handleAddVehicle = (e: React.FormEvent) => {
-    e.preventDefault();
-    const vObj: Vehicle = {
-      id: `V-${Date.now().toString().slice(-4)}`,
-      flatId: newVehicle.flatId,
-      type: newVehicle.type,
-      registrationNumber: newVehicle.registrationNumber.toUpperCase(),
-      parkingSlot: newVehicle.parkingSlot || `P-${newVehicle.flatId}`,
-      ownerName: newVehicle.ownerName || 'Resident'
-    };
-    const updated = [vObj, ...vehicles];
-    setVehicles(updated);
-    StorageEngine.saveVehicles(updated);
-
-    // Update vehicle count in flat
-    const updatedFlats = flats.map(f => f.id === newVehicle.flatId ? { ...f, vehiclesCount: f.vehiclesCount + 1 } : f);
-    setFlats(updatedFlats);
-    StorageEngine.saveFlats(updatedFlats);
-
-    setIsVehicleModalOpen(false);
-  };
-
   const handleAddHelp = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!newHelp.flatId) return;
     const hObj: DomesticHelp = {
       id: `DH-${Date.now().toString().slice(-4)}`,
       flatId: newHelp.flatId,
@@ -142,7 +109,7 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
           <span className="badge badge-sage" style={{ marginBottom: '0.4rem' }}>MODULE 01</span>
           <h2>🏡 Resident & Villa Plot Directory</h2>
           <p style={{ fontSize: '0.9rem', color: '#031D34' }}>
-            Complete directory across <strong>Lanes 1 to 15</strong>, owner & tenant profiles, vehicle parking registrations, and domestic staff.
+            Complete directory across <strong>Lanes 1 to 15</strong>, owner & tenant profiles, and domestic staff.
           </p>
         </div>
         
@@ -152,9 +119,6 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
               <Plus size={16} /> Add Villa / Plot Profile
             </button>
           )}
-          <button onClick={() => setIsVehicleModalOpen(true)} className="btn btn-secondary">
-            <Car size={16} /> Register Vehicle
-          </button>
           <button onClick={() => setIsHelpModalOpen(true)} className="btn btn-accent">
             <UserPlus size={16} /> Add Domestic Staff
           </button>
@@ -172,16 +136,6 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
           }}
         >
           Layout Plot Directory ({flats.length})
-        </button>
-        <button
-          onClick={() => setActiveTab('vehicles')}
-          style={{
-            background: 'none', border: 'none', padding: '0.6rem 0.2rem', fontWeight: 700, fontSize: '0.95rem',
-            borderBottom: activeTab === 'vehicles' ? '3px solid #0B4769' : 'none',
-            color: activeTab === 'vehicles' ? '#0B4769' : '#64748B', cursor: 'pointer'
-          }}
-        >
-          Vehicles & Parking ({vehicles.length})
         </button>
         <button
           onClick={() => setActiveTab('domestic_help')}
@@ -219,7 +173,7 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
               </div>
             </div>
 
-            {/* Scrollable Lane Pills Bar (ALL, Lane 1 to Lane 15) */}
+            {/* Scrollable Lane Pills Bar */}
             <div style={{ display: 'flex', gap: '0.4rem', overflowX: 'auto', paddingBottom: '0.3rem' }}>
               <button
                 onClick={() => setSelectedBlock('ALL')}
@@ -241,118 +195,104 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
             </div>
           </div>
 
-          {/* Grid of Flat Cards */}
-          <div className="grid-3">
-            {filteredFlats.map((flat) => (
-              <div key={flat.id} className="card" style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <div style={{ background: '#0B4769', color: '#FFF', padding: '0.4rem 0.75rem', borderRadius: '6px', fontWeight: 800, fontSize: '1rem' }}>
-                      {flat.id}
+          {/* Empty State vs Grid */}
+          {filteredFlats.length === 0 ? (
+            <div className="card text-center" style={{ padding: '3rem 1.5rem' }}>
+              <h3 style={{ color: '#0B4769', marginBottom: '0.5rem' }}>No Villa Plots Registered Yet</h3>
+              <p style={{ fontSize: '0.9rem', color: '#64748B', marginBottom: '1.5rem' }}>
+                Start by adding residents and plot details across Lanes 1 to 15.
+              </p>
+              {canEdit && (
+                <button onClick={() => setIsFlatModalOpen(true)} className="btn btn-primary">
+                  <Plus size={16} /> Register First Villa Plot
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="grid-3">
+              {filteredFlats.map((flat) => (
+                <div key={flat.id} className="card" style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <div style={{ background: '#0B4769', color: '#FFF', padding: '0.4rem 0.75rem', borderRadius: '6px', fontWeight: 800, fontSize: '1rem' }}>
+                        {flat.id}
+                      </div>
+                      <div>
+                        <span style={{ fontSize: '0.8rem', color: '#64748B', display: 'block', fontWeight: 600 }}>{flat.block} · {flat.flatNumber}</span>
+                        <span style={{ fontSize: '0.78rem', color: '#475569' }}>{flat.sqft} sq.ft</span>
+                      </div>
                     </div>
-                    <div>
-                      <span style={{ fontSize: '0.8rem', color: '#64748B', display: 'block', fontWeight: 600 }}>{flat.block} · {flat.flatNumber}</span>
-                      <span style={{ fontSize: '0.78rem', color: '#475569' }}>{flat.sqft} sq.ft</span>
+                    
+                    <span className={`badge ${flat.occupancyType === 'Owner Occupied' ? 'badge-sage' : flat.occupancyType === 'Rented' ? 'badge-ocean' : 'badge-pending'}`}>
+                      {flat.occupancyType}
+                    </span>
+                  </div>
+
+                  <div style={{ background: '#F8FAFC', padding: '0.75rem', borderRadius: '8px', border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                    <div style={{ fontSize: '0.85rem' }}>
+                      <strong>Owner:</strong> {flat.ownerName}
                     </div>
-                  </div>
-                  
-                  <span className={`badge ${flat.occupancyType === 'Owner Occupied' ? 'badge-sage' : flat.occupancyType === 'Rented' ? 'badge-ocean' : 'badge-pending'}`}>
-                    {flat.occupancyType}
-                  </span>
-                </div>
-
-                <div style={{ background: '#F8FAFC', padding: '0.75rem', borderRadius: '8px', border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                  <div style={{ fontSize: '0.85rem' }}>
-                    <strong>Owner:</strong> {flat.ownerName}
-                  </div>
-                  <div style={{ fontSize: '0.8rem', color: '#64748B', display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}><Phone size={12} /> {flat.ownerPhone}</span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}><Mail size={12} /> {flat.ownerEmail.split('@')[0]}</span>
-                  </div>
-
-                  {flat.tenantName && (
-                    <div style={{ borderTop: '1px dashed #CBD5E1', paddingTop: '0.35rem', marginTop: '0.35rem', fontSize: '0.85rem' }}>
-                      <strong>Tenant:</strong> {flat.tenantName} ({flat.tenantPhone})
+                    <div style={{ fontSize: '0.8rem', color: '#64748B', display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}><Phone size={12} /> {flat.ownerPhone}</span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}><Mail size={12} /> {flat.ownerEmail.split('@')[0]}</span>
                     </div>
-                  )}
-                </div>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#475569', paddingTop: '0.2rem' }}>
-                  <span>🚗 Vehicles: <strong>{flat.vehiclesCount}</strong></span>
-                  <span>🧹 Staff: <strong>{flat.registeredHelpCount}</strong></span>
-                  <span>💰 Maintenance: <strong>₹{flat.monthlyDuesRate}/mo</strong></span>
+                    {flat.tenantName && (
+                      <div style={{ borderTop: '1px dashed #CBD5E1', paddingTop: '0.35rem', marginTop: '0.35rem', fontSize: '0.85rem' }}>
+                        <strong>Tenant:</strong> {flat.tenantName} ({flat.tenantPhone})
+                      </div>
+                    )}
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#475569', paddingTop: '0.2rem' }}>
+                    <span>🧹 Staff: <strong>{flat.registeredHelpCount}</strong></span>
+                    <span>💰 Maintenance: <strong>₹{flat.monthlyDuesRate}/mo</strong></span>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </>
-      )}
-
-      {/* VEHICLES TAB CONTENT */}
-      {activeTab === 'vehicles' && (
-        <div className="card">
-          <h3>🚗 Registered Layout Vehicles & Parking Slots</h3>
-          <div className="table-responsive">
-            <table>
-              <thead>
-                <tr>
-                  <th>Reg Number</th>
-                  <th>Plot / Address ID</th>
-                  <th>Vehicle Type</th>
-                  <th>Parking Slot</th>
-                  <th>Owner / Resident</th>
-                </tr>
-              </thead>
-              <tbody>
-                {vehicles.map((v) => (
-                  <tr key={v.id}>
-                    <td><strong style={{ color: '#0B4769' }}>{v.registrationNumber}</strong></td>
-                    <td><span className="badge badge-ocean">{v.flatId}</span></td>
-                    <td>{v.type}</td>
-                    <td><span className="badge badge-sage">{v.parkingSlot}</span></td>
-                    <td>{v.ownerName}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
       )}
 
       {/* DOMESTIC HELP TAB CONTENT */}
       {activeTab === 'domestic_help' && (
         <div className="card">
           <h3>🧹 Registered Domestic Help & Daily Staff</h3>
-          <div className="table-responsive">
-            <table>
-              <thead>
-                <tr>
-                  <th>Pass Code</th>
-                  <th>Name</th>
-                  <th>Plot Address</th>
-                  <th>Role</th>
-                  <th>Phone Number</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {domesticHelp.map((h) => (
-                  <tr key={h.id}>
-                    <td><strong style={{ color: '#31532C' }}>{h.passCode}</strong></td>
-                    <td><strong>{h.name}</strong></td>
-                    <td><span className="badge badge-ocean">{h.flatId}</span></td>
-                    <td>{h.role}</td>
-                    <td>{h.phone}</td>
-                    <td>
-                      <span className={`badge ${h.status === 'In Layout' ? 'badge-paid' : 'badge-pending'}`}>
-                        {h.status} {h.entryTime ? `(${h.entryTime})` : ''}
-                      </span>
-                    </td>
+          {domesticHelp.length === 0 ? (
+            <p style={{ color: '#64748B', fontSize: '0.9rem', marginTop: '0.5rem' }}>No domestic staff registered yet.</p>
+          ) : (
+            <div className="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Pass Code</th>
+                    <th>Name</th>
+                    <th>Plot Address</th>
+                    <th>Role</th>
+                    <th>Phone Number</th>
+                    <th>Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {domesticHelp.map((h) => (
+                    <tr key={h.id}>
+                      <td><strong style={{ color: '#31532C' }}>{h.passCode}</strong></td>
+                      <td><strong>{h.name}</strong></td>
+                      <td><span className="badge badge-ocean">{h.flatId}</span></td>
+                      <td>{h.role}</td>
+                      <td>{h.phone}</td>
+                      <td>
+                        <span className={`badge ${h.status === 'In Layout' ? 'badge-paid' : 'badge-pending'}`}>
+                          {h.status} {h.entryTime ? `(${h.entryTime})` : ''}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
 
@@ -460,86 +400,6 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
         </div>
       )}
 
-      {/* MODAL: ADD VEHICLE */}
-      {isVehicleModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h3>Register Layout Vehicle & Parking Slot</h3>
-              <button onClick={() => setIsVehicleModalOpen(false)} style={{ color: '#FFF', background: 'none', border: 'none', cursor: 'pointer' }}>X</button>
-            </div>
-            <form onSubmit={handleAddVehicle} className="modal-body">
-              <div className="form-group">
-                <label>Target Address / Plot</label>
-                <select
-                  className="form-control"
-                  value={newVehicle.flatId}
-                  onChange={(e) => setNewVehicle({ ...newVehicle, flatId: e.target.value })}
-                >
-                  {flats.map(f => (
-                    <option key={f.id} value={f.id}>{f.id} - {f.ownerName} ({f.block})</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="grid-2">
-                <div className="form-group">
-                  <label>Vehicle Type</label>
-                  <select
-                    className="form-control"
-                    value={newVehicle.type}
-                    onChange={(e) => setNewVehicle({ ...newVehicle, type: e.target.value as any })}
-                  >
-                    <option value="Car">Car</option>
-                    <option value="Bike">Bike</option>
-                    <option value="EV Car">EV Car</option>
-                    <option value="EV Bike">EV Bike</option>
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label>Registration Number</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. KA-01-MJ-1234"
-                    className="form-control"
-                    value={newVehicle.registrationNumber}
-                    onChange={(e) => setNewVehicle({ ...newVehicle, registrationNumber: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              <div className="grid-2">
-                <div className="form-group">
-                  <label>Parking Slot / Garage</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. P-L01-12"
-                    className="form-control"
-                    value={newVehicle.parkingSlot}
-                    onChange={(e) => setNewVehicle({ ...newVehicle, parkingSlot: e.target.value })}
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Resident Owner Name</label>
-                  <input
-                    type="text"
-                    placeholder="Name"
-                    className="form-control"
-                    value={newVehicle.ownerName}
-                    onChange={(e) => setNewVehicle({ ...newVehicle, ownerName: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              <button type="submit" className="btn btn-secondary" style={{ width: '100%', marginTop: '1rem' }}>
-                Register Vehicle
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
-
       {/* MODAL: ADD DOMESTIC HELP */}
       {isHelpModalOpen && (
         <div className="modal-overlay">
@@ -551,15 +411,14 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
             <form onSubmit={handleAddHelp} className="modal-body">
               <div className="form-group">
                 <label>Assigned Address / Plot</label>
-                <select
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. L01-P12 or Lane 1 Plot 12"
                   className="form-control"
                   value={newHelp.flatId}
                   onChange={(e) => setNewHelp({ ...newHelp, flatId: e.target.value })}
-                >
-                  {flats.map(f => (
-                    <option key={f.id} value={f.id}>{f.id} - {f.ownerName} ({f.block})</option>
-                  ))}
-                </select>
+                />
               </div>
 
               <div className="grid-2">

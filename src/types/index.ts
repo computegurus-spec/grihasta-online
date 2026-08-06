@@ -29,17 +29,7 @@ export interface Flat {
   occupancyType: 'Owner Occupied' | 'Rented' | 'Vacant';
   sqft: number;
   monthlyDuesRate: number;
-  vehiclesCount: number;
   registeredHelpCount: number;
-}
-
-export interface Vehicle {
-  id: string;
-  flatId: string;
-  type: 'Car' | 'Bike' | 'EV Car' | 'EV Bike';
-  registrationNumber: string;
-  parkingSlot: string;
-  ownerName: string;
 }
 
 export interface DomesticHelp {
@@ -261,7 +251,7 @@ export interface CarpoolRoute {
   id: string;
   flatId: string;
   driverName: string;
-  destination: string; // e.g. "Whitefield", "Koramangala", "Electronic City"
+  destination: string;
   departureTime: string;
   availableSeats: number;
   notes: string;

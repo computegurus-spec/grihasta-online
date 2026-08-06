@@ -1,6 +1,5 @@
 import type {
   Flat,
-  Vehicle,
   DomesticHelp,
   VisitorLog,
   DeliveryLog,
@@ -23,7 +22,6 @@ import type {
 
 import {
   INITIAL_FLATS,
-  INITIAL_VEHICLES,
   INITIAL_DOMESTIC_HELP,
   INITIAL_VISITOR_LOGS,
   INITIAL_DELIVERIES,
@@ -45,26 +43,25 @@ import {
 } from './mockData';
 
 const KEYS = {
-  FLATS: 'grihasta_flats_v1',
-  VEHICLES: 'grihasta_vehicles_v1',
-  DOMESTIC_HELP: 'grihasta_domestic_help_v1',
-  VISITORS: 'grihasta_visitors_v1',
-  DELIVERIES: 'grihasta_deliveries_v1',
-  DUES: 'grihasta_dues_v1',
-  EXPENSES: 'grihasta_expenses_v1',
-  TICKETS: 'grihasta_tickets_v1',
-  AMENITIES: 'grihasta_amenities_v1',
-  BOOKINGS: 'grihasta_bookings_v1',
-  NOTICES: 'grihasta_notices_v1',
-  POLLS: 'grihasta_polls_v1',
-  STAFF: 'grihasta_staff_v1',
-  PROFILES: 'grihasta_social_profiles_v1',
-  POSTS: 'grihasta_community_posts_v1',
-  MARKETPLACE: 'grihasta_marketplace_v1',
-  LOST_FOUND: 'grihasta_lost_found_v1',
-  RECOMMENDATIONS: 'grihasta_recommendations_v1',
-  CARPOOLS: 'grihasta_carpools_v1',
-  GROUPS: 'grihasta_groups_v1'
+  FLATS: 'grihasta_flats_v2',
+  DOMESTIC_HELP: 'grihasta_domestic_help_v2',
+  VISITORS: 'grihasta_visitors_v2',
+  DELIVERIES: 'grihasta_deliveries_v2',
+  DUES: 'grihasta_dues_v2',
+  EXPENSES: 'grihasta_expenses_v2',
+  TICKETS: 'grihasta_tickets_v2',
+  AMENITIES: 'grihasta_amenities_v2',
+  BOOKINGS: 'grihasta_bookings_v2',
+  NOTICES: 'grihasta_notices_v2',
+  POLLS: 'grihasta_polls_v2',
+  STAFF: 'grihasta_staff_v2',
+  PROFILES: 'grihasta_social_profiles_v2',
+  POSTS: 'grihasta_community_posts_v2',
+  MARKETPLACE: 'grihasta_marketplace_v2',
+  LOST_FOUND: 'grihasta_lost_found_v2',
+  RECOMMENDATIONS: 'grihasta_recommendations_v2',
+  CARPOOLS: 'grihasta_carpools_v2',
+  GROUPS: 'grihasta_groups_v2'
 };
 
 function getItem<T>(key: string, fallback: T): T {
@@ -88,9 +85,6 @@ function setItem<T>(key: string, value: T): void {
 export const StorageEngine = {
   getFlats: (): Flat[] => getItem(KEYS.FLATS, INITIAL_FLATS),
   saveFlats: (flats: Flat[]) => setItem(KEYS.FLATS, flats),
-
-  getVehicles: (): Vehicle[] => getItem(KEYS.VEHICLES, INITIAL_VEHICLES),
-  saveVehicles: (vehicles: Vehicle[]) => setItem(KEYS.VEHICLES, vehicles),
 
   getDomesticHelp: (): DomesticHelp[] => getItem(KEYS.DOMESTIC_HELP, INITIAL_DOMESTIC_HELP),
   saveDomesticHelp: (help: DomesticHelp[]) => setItem(KEYS.DOMESTIC_HELP, help),
@@ -125,7 +119,6 @@ export const StorageEngine = {
   getStaff: (): StaffMember[] => getItem(KEYS.STAFF, INITIAL_STAFF),
   saveStaff: (s: StaffMember[]) => setItem(KEYS.STAFF, s),
 
-  // Module 9 Data Handlers
   getSocialProfiles: (): ResidentSocialProfile[] => getItem(KEYS.PROFILES, INITIAL_RESIDENT_PROFILES),
   saveSocialProfiles: (p: ResidentSocialProfile[]) => setItem(KEYS.PROFILES, p),
 
@@ -149,6 +142,6 @@ export const StorageEngine = {
 
   resetAllToDefault: () => {
     localStorage.clear();
-    console.log('All local storage cleared and reset to defaults');
+    console.log('All local storage cleared');
   }
 };
