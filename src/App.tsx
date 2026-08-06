@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { UserRole } from './types';
 import { Navbar } from './components/Navbar';
 import { ManualModal } from './components/ManualModal';
+import { LandingPage } from './components/LandingPage';
 
 // Module Components
 import { Module01_Flats } from './components/Module01_Flats';
@@ -17,9 +18,19 @@ import { Module09_CommunitySocial } from './components/Module09_CommunitySocial'
 import { TreePine, BookOpen, ExternalLink } from 'lucide-react';
 
 export function App() {
+  const [showLanding, setShowLanding] = useState<boolean>(true);
   const [activeRole, setActiveRole] = useState<UserRole>('MC_ADMIN');
   const [activeModule, setActiveModule] = useState<number>(1);
   const [isManualOpen, setIsManualOpen] = useState<boolean>(false);
+
+  // Show landing page first
+  if (showLanding) {
+    return (
+      <>
+        <LandingPage onEnterPortal={() => setShowLanding(false)} />
+      </>
+    );
+  }
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -61,6 +72,12 @@ export function App() {
                 style={{ fontWeight: 700 }}
               >
                 <BookOpen size={16} /> Open Resident Manual
+              </button>
+              <button
+                onClick={() => setShowLanding(true)}
+                style={{ background: 'none', border: '1px solid rgba(255,255,255,0.25)', color: 'rgba(255,255,255,0.7)', borderRadius: '6px', padding: '0.3rem 0.75rem', fontSize: '0.75rem', cursor: 'pointer' }}
+              >
+                ← Back to Home Page
               </button>
               <a
                 href="https://sites.google.com/view/grihastamanual/home"

@@ -610,51 +610,6 @@ export const Module09_CommunitySocial: React.FC<Props> = ({ role: _role }) => {
         </div>
       )}
 
-      {/* 8. WHY DIFFERENT FROM FACEBOOK */}
-      {activeTab === 'why_different' && (
-        <div className="card" style={{ background: '#FFF' }}>
-          <h3 style={{ color: '#0B4769', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <ShieldCheck size={22} style={{ color: '#31532C' }} /> What Makes grihasta.online Community Different From Facebook
-          </h3>
-          <p style={{ fontSize: '0.9rem', color: '#64748B', marginBottom: '1.25rem' }}>
-            Unlike generic social media networks, `grihasta.online` is built specifically for verified homeowners and tenants of Artha Grihasta Layout.
-          </p>
-
-          <div className="table-responsive">
-            <table>
-              <thead>
-                <tr>
-                  <th>Feature / Aspect</th>
-                  <th>Public Social Media (Facebook / Nextdoor)</th>
-                  <th>grihasta.online Community</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><strong>Identity & Security</strong></td>
-                  <td>Anyone can join with fake profiles</td>
-                  <td><span className="badge badge-paid"><CheckCircle2 size={12} /> Only MC-Verified Flat Residents</span></td>
-                </tr>
-                <tr>
-                  <td><strong>Post Transparency</strong></td>
-                  <td>Anonymous trolls & fake accounts allowed</td>
-                  <td><span className="badge badge-paid"><CheckCircle2 size={12} /> Every post tied to real Flat ID</span></td>
-                </tr>
-                <tr>
-                  <td><strong>Privacy & Ads</strong></td>
-                  <td>Data tracked for targeted ads & public visibility</td>
-                  <td><span className="badge badge-paid"><CheckCircle2 size={12} /> Zero Ads · 100% Private Layout Network</span></td>
-                </tr>
-                <tr>
-                  <td><strong>Governance & Moderation</strong></td>
-                  <td>Unregulated algorithms & spam</td>
-                  <td><span className="badge badge-paid"><CheckCircle2 size={12} /> Layout MC can pin, moderate, & broadcast</span></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
 
       {/* MODAL: POST COMMUNITY FEED */}
       {isPostModalOpen && (
