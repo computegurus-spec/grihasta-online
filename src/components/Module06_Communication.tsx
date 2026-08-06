@@ -65,10 +65,10 @@ export const Module06_Communication: React.FC<Props> = ({ role }) => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      {/* Module Banner */}
-      <div className="card card-sage" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-        <div>
-          <span className="badge badge-sage" style={{ marginBottom: '0.4rem' }}>MODULE 06</span>
+      {/* Module Banner Header */}
+      <div className="card card-sage module-header-banner">
+        <div className="module-header-title-group">
+          <span className="badge badge-sage">MODULE 06</span>
           <h2>📢 Communication Hub & Notice Board</h2>
           <p style={{ fontSize: '0.9rem', color: '#031D34' }}>
             Official MC circulars, instant emergency broadcasts, layout event calendar, and digital voting polls.
@@ -76,9 +76,11 @@ export const Module06_Communication: React.FC<Props> = ({ role }) => {
         </div>
 
         {canPost && (
-          <button onClick={() => setIsNoticeModalOpen(true)} className="btn btn-primary">
-            <Plus size={16} /> Post Official Circular / Broadcast
-          </button>
+          <div className="module-header-actions">
+            <button onClick={() => setIsNoticeModalOpen(true)} className="btn btn-primary">
+              <Plus size={16} /> Post Official Circular / Broadcast
+            </button>
+          </div>
         )}
       </div>
 
@@ -104,22 +106,28 @@ export const Module06_Communication: React.FC<Props> = ({ role }) => {
             <Bell size={20} /> Official Notice Board
           </h3>
 
-          {notices.map((n) => (
-            <div key={n.id} className="card" style={{ borderLeft: n.isPinned ? '5px solid #E9BB76' : '1px solid rgba(11, 71, 105, 0.12)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-                <span className={`badge ${n.category === 'Official MC' ? 'badge-ocean' : 'badge-sage'}`}>
-                  {n.category}
-                </span>
-                <span style={{ fontSize: '0.75rem', color: '#64748B' }}>{n.date} · {n.postedBy}</span>
-              </div>
-
-              <h4 style={{ color: '#0B4769', marginBottom: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                {n.isPinned && <Pin size={14} style={{ color: '#E9BB76' }} />}
-                {n.title}
-              </h4>
-              <p style={{ fontSize: '0.9rem', color: '#475569' }}>{n.content}</p>
+          {notices.length === 0 ? (
+            <div className="card text-center" style={{ padding: '2.5rem 1rem' }}>
+              <p style={{ color: '#64748B', fontSize: '0.9rem' }}>No official notices posted yet.</p>
             </div>
-          ))}
+          ) : (
+            notices.map((n) => (
+              <div key={n.id} className="card" style={{ borderLeft: n.isPinned ? '5px solid #E9BB76' : '1px solid rgba(11, 71, 105, 0.12)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                  <span className={`badge ${n.category === 'Official MC' ? 'badge-ocean' : 'badge-sage'}`}>
+                    {n.category}
+                  </span>
+                  <span style={{ fontSize: '0.75rem', color: '#64748B' }}>{n.date} · {n.postedBy}</span>
+                </div>
+
+                <h4 style={{ color: '#0B4769', marginBottom: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  {n.isPinned && <Pin size={14} style={{ color: '#E9BB76' }} />}
+                  {n.title}
+                </h4>
+                <p style={{ fontSize: '0.9rem', color: '#475569' }}>{n.content}</p>
+              </div>
+            ))
+          )}
         </div>
 
         {/* Polls & Voting Column */}
@@ -128,38 +136,44 @@ export const Module06_Communication: React.FC<Props> = ({ role }) => {
             <Vote size={20} /> Community Decision Polls
           </h3>
 
-          {polls.map((poll) => (
-            <div key={poll.id} className="card">
-              <span className="badge badge-amber" style={{ marginBottom: '0.5rem' }}>ACTIVE LAYOUT POLL</span>
-              <h4 style={{ color: '#031D34', marginBottom: '0.75rem' }}>{poll.question}</h4>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                {poll.options.map((opt) => {
-                  const pct = poll.totalVotes > 0 ? Math.round((opt.votes / poll.totalVotes) * 100) : 0;
-                  return (
-                    <div key={opt.id} style={{ background: '#F8FAFC', padding: '0.75rem', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem', fontSize: '0.875rem' }}>
-                        <span><strong>{opt.text}</strong></span>
-                        <span style={{ color: '#0B4769', fontWeight: 700 }}>{opt.votes} votes ({pct}%)</span>
-                      </div>
-                      
-                      <div style={{ background: '#E2E8F0', height: '8px', borderRadius: '4px', overflow: 'hidden', marginBottom: '0.4rem' }}>
-                        <div style={{ background: '#1E6B85', width: `${pct}%`, height: '100%', transition: 'width 0.4s ease' }} />
-                      </div>
-
-                      <button onClick={() => handleVote(poll.id, opt.id)} className="btn btn-sm btn-outline" style={{ fontSize: '0.75rem', width: '100%' }}>
-                        Vote For Option
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-              
-              <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '0.75rem', textAlign: 'right' }}>
-                Total Votes Polled: <strong>{poll.totalVotes}</strong> · Closes {poll.expiresAt}
-              </div>
+          {polls.length === 0 ? (
+            <div className="card text-center" style={{ padding: '2.5rem 1rem' }}>
+              <p style={{ color: '#64748B', fontSize: '0.9rem' }}>No active voting polls at the moment.</p>
             </div>
-          ))}
+          ) : (
+            polls.map((poll) => (
+              <div key={poll.id} className="card">
+                <span className="badge badge-amber" style={{ marginBottom: '0.5rem' }}>ACTIVE LAYOUT POLL</span>
+                <h4 style={{ color: '#031D34', marginBottom: '0.75rem' }}>{poll.question}</h4>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  {poll.options.map((opt) => {
+                    const pct = poll.totalVotes > 0 ? Math.round((opt.votes / poll.totalVotes) * 100) : 0;
+                    return (
+                      <div key={opt.id} style={{ background: '#F8FAFC', padding: '0.75rem', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem', fontSize: '0.875rem' }}>
+                          <span><strong>{opt.text}</strong></span>
+                          <span style={{ color: '#0B4769', fontWeight: 700 }}>{opt.votes} votes ({pct}%)</span>
+                        </div>
+                        
+                        <div style={{ background: '#E2E8F0', height: '8px', borderRadius: '4px', overflow: 'hidden', marginBottom: '0.4rem' }}>
+                          <div style={{ background: '#1E6B85', width: `${pct}%`, height: '100%', transition: 'width 0.4s ease' }} />
+                        </div>
+
+                        <button onClick={() => handleVote(poll.id, opt.id)} className="btn btn-sm btn-outline" style={{ fontSize: '0.75rem', width: '100%' }}>
+                          Vote For Option
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+                
+                <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '0.75rem', textAlign: 'right' }}>
+                  Total Votes Polled: <strong>{poll.totalVotes}</strong> · Closes {poll.expiresAt}
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
 

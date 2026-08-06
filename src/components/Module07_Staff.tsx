@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { StaffMember, UserRole } from '../types';
 import { StorageEngine } from '../services/storage';
-import { LogIn, LogOut, Download, Plus } from 'lucide-react';
+import { LogIn, LogOut, Download, Plus, Users } from 'lucide-react';
 
 interface Props {
   role: UserRole;
@@ -62,10 +62,10 @@ export const Module07_Staff: React.FC<Props> = ({ role }) => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      {/* Banner */}
-      <div className="card card-sage" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-        <div>
-          <span className="badge badge-sage" style={{ marginBottom: '0.4rem' }}>MODULE 07</span>
+      {/* Module Banner Header */}
+      <div className="card card-sage module-header-banner">
+        <div className="module-header-title-group">
+          <span className="badge badge-sage">MODULE 07</span>
           <h2>👷 Staff Attendance & Shift Roster</h2>
           <p style={{ fontSize: '0.9rem', color: '#031D34' }}>
             Daily check-in logs for guards, housekeeping & maintenance staff with MC payroll summary reports.
@@ -73,66 +73,80 @@ export const Module07_Staff: React.FC<Props> = ({ role }) => {
         </div>
 
         {['MC_ADMIN', 'MC_MEMBER'].includes(role) && (
-          <button onClick={() => setIsStaffModalOpen(true)} className="btn btn-primary">
-            <Plus size={16} /> Register Staff Member
-          </button>
+          <div className="module-header-actions">
+            <button onClick={() => setIsStaffModalOpen(true)} className="btn btn-primary">
+              <Plus size={16} /> Register Staff Member
+            </button>
+          </div>
         )}
       </div>
 
       {/* Staff Roster Grid */}
       <div className="card">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
           <h3>📋 Layout Staff Shift Log & Status ({totalOnDuty} On Duty Now)</h3>
           <span className="badge badge-paid">{totalOnDuty} Staff On-Site</span>
         </div>
 
-        <div className="table-responsive">
-          <table>
-            <thead>
-              <tr>
-                <th>Staff Name</th>
-                <th>Role</th>
-                <th>Shift Roster</th>
-                <th>Contact</th>
-                <th>In Time</th>
-                <th>Month Attendance</th>
-                <th>Duty Status</th>
-                <th>Clock In/Out</th>
-              </tr>
-            </thead>
-            <tbody>
-              {staffList.map((s) => (
-                <tr key={s.id}>
-                  <td><strong>{s.name}</strong></td>
-                  <td><span className="badge badge-ocean">{s.role}</span></td>
-                  <td><span className="badge badge-amber">{s.shift}</span></td>
-                  <td>{s.phone}</td>
-                  <td>{s.inTime || '-'}</td>
-                  <td><strong style={{ color: '#31532C' }}>{s.attendancePercentThisMonth}%</strong></td>
-                  <td>
-                    <span className={`badge ${s.status === 'On Duty' ? 'badge-paid' : s.status === 'On Leave' ? 'badge-overdue' : 'badge-pending'}`}>
-                      {s.status}
-                    </span>
-                  </td>
-                  <td>
-                    <button
-                      onClick={() => handleToggleDuty(s.id)}
-                      className={`btn btn-sm ${s.status === 'On Duty' ? 'btn-outline' : 'btn-accent'}`}
-                      style={{ borderColor: s.status === 'On Duty' ? '#991B1B' : undefined, color: s.status === 'On Duty' ? '#991B1B' : undefined }}
-                    >
-                      {s.status === 'On Duty' ? <LogOut size={12} /> : <LogIn size={12} />}
-                      {s.status === 'On Duty' ? 'Clock Out' : 'Clock In'}
-                    </button>
-                  </td>
+        {staffList.length === 0 ? (
+          <div className="text-center" style={{ padding: '2.5rem 1rem' }}>
+            <Users size={36} style={{ color: '#1E6B85', margin: '0 auto 0.75rem auto', opacity: 0.8 }} />
+            <p style={{ color: '#64748B', fontSize: '0.9rem', marginBottom: '1rem' }}>No staff members registered yet.</p>
+            {['MC_ADMIN', 'MC_MEMBER'].includes(role) && (
+              <button onClick={() => setIsStaffModalOpen(true)} className="btn btn-primary">
+                <Plus size={16} /> Add First Staff Member
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Staff Name</th>
+                  <th>Role</th>
+                  <th>Shift Roster</th>
+                  <th>Contact</th>
+                  <th>In Time</th>
+                  <th>Month Attendance</th>
+                  <th>Duty Status</th>
+                  <th>Clock In/Out</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {staffList.map((s) => (
+                  <tr key={s.id}>
+                    <td><strong>{s.name}</strong></td>
+                    <td><span className="badge badge-ocean">{s.role}</span></td>
+                    <td><span className="badge badge-amber">{s.shift}</span></td>
+                    <td>{s.phone}</td>
+                    <td>{s.inTime || '-'}</td>
+                    <td><strong style={{ color: '#31532C' }}>{s.attendancePercentThisMonth}%</strong></td>
+                    <td>
+                      <span className={`badge ${s.status === 'On Duty' ? 'badge-paid' : s.status === 'On Leave' ? 'badge-overdue' : 'badge-pending'}`}>
+                        {s.status}
+                      </span>
+                    </td>
+                    <td>
+                      <button
+                        onClick={() => handleToggleDuty(s.id)}
+                        className={`btn btn-sm ${s.status === 'On Duty' ? 'btn-outline' : 'btn-accent'}`}
+                        style={{ borderColor: s.status === 'On Duty' ? '#991B1B' : undefined, color: s.status === 'On Duty' ? '#991B1B' : undefined }}
+                      >
+                        {s.status === 'On Duty' ? <LogOut size={12} /> : <LogIn size={12} />}
+                        {s.status === 'On Duty' ? 'Clock Out' : 'Clock In'}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Payroll Input Report for MC */}
-      {['MC_ADMIN', 'MC_MEMBER'].includes(role) && (
+      {['MC_ADMIN', 'MC_MEMBER'].includes(role) && staffList.length > 0 && (
         <div className="card">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
             <h3>📊 MC Staff Payroll Input Summary (August 2026)</h3>

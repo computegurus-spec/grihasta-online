@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { VisitorLog, DeliveryLog, UserRole } from '../types';
 import { StorageEngine } from '../services/storage';
-import { QrCode, Truck, LogOut, Plus, Share2 } from 'lucide-react';
+import { QrCode, Truck, LogOut, Plus, Share2, ShieldCheck } from 'lucide-react';
 
 interface Props {
   role: UserRole;
@@ -10,14 +10,14 @@ interface Props {
 export const Module02_Gate: React.FC<Props> = ({ role: _role }) => {
   const [visitorLogs, setVisitorLogs] = useState<VisitorLog[]>(StorageEngine.getVisitorLogs());
   const [deliveries, setDeliveries] = useState<DeliveryLog[]>(StorageEngine.getDeliveries());
-  const [activeTab, setActiveTab] = useState<'visitors' | 'deliveries' | 'pass_generator'>('visitors');
+  const [activeTab, setActiveTab] = useState<'visitors' | 'deliveries'>('visitors');
 
   // New Visitor Check-In Form
   const [isVisitorModalOpen, setIsVisitorModalOpen] = useState(false);
   const [newVisitor, setNewVisitor] = useState({
     visitorName: '',
     phone: '',
-    flatId: 'A-101',
+    flatId: 'L01-P12',
     purpose: 'Guest' as const,
     vehicleNo: ''
   });
@@ -30,7 +30,7 @@ export const Module02_Gate: React.FC<Props> = ({ role: _role }) => {
   const [isDeliveryModalOpen, setIsDeliveryModalOpen] = useState(false);
   const [newDelivery, setNewDelivery] = useState({
     provider: 'Amazon' as const,
-    flatId: 'A-101',
+    flatId: 'L01-P12',
     executiveName: '',
     phone: '',
     status: 'Delivered to Door' as const,
@@ -115,17 +115,17 @@ export const Module02_Gate: React.FC<Props> = ({ role: _role }) => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      {/* Module Banner */}
-      <div className="card card-sage" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-        <div>
-          <span className="badge badge-sage" style={{ marginBottom: '0.4rem' }}>MODULE 02</span>
+      {/* Module Banner Header */}
+      <div className="card card-sage module-header-banner">
+        <div className="module-header-title-group">
+          <span className="badge badge-sage">MODULE 02</span>
           <h2>🛡️ Security & Gate Management</h2>
           <p style={{ fontSize: '0.9rem', color: '#031D34' }}>
             Digital gate entry log, pre-approved visitor passes with QR codes, and delivery tracking.
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <div className="module-header-actions">
           <button onClick={() => setIsVisitorModalOpen(true)} className="btn btn-primary">
             <Plus size={16} /> Log Gate Entry
           </button>
@@ -138,25 +138,17 @@ export const Module02_Gate: React.FC<Props> = ({ role: _role }) => {
         </div>
       </div>
 
-      {/* Tabs */}
-      <div style={{ display: 'flex', borderBottom: '2px solid #CBD5E1', gap: '1.5rem' }}>
+      {/* Pill Navigation Tabs */}
+      <div className="subnav-tabs">
         <button
           onClick={() => setActiveTab('visitors')}
-          style={{
-            background: 'none', border: 'none', padding: '0.6rem 0.2rem', fontWeight: 700, fontSize: '0.95rem',
-            borderBottom: activeTab === 'visitors' ? '3px solid #0B4769' : 'none',
-            color: activeTab === 'visitors' ? '#0B4769' : '#64748B', cursor: 'pointer'
-          }}
+          className={`subnav-tab-btn ${activeTab === 'visitors' ? 'active' : ''}`}
         >
           Gate Visitor Logs ({visitorLogs.length})
         </button>
         <button
           onClick={() => setActiveTab('deliveries')}
-          style={{
-            background: 'none', border: 'none', padding: '0.6rem 0.2rem', fontWeight: 700, fontSize: '0.95rem',
-            borderBottom: activeTab === 'deliveries' ? '3px solid #0B4769' : 'none',
-            color: activeTab === 'deliveries' ? '#0B4769' : '#64748B', cursor: 'pointer'
-          }}
+          className={`subnav-tab-btn ${activeTab === 'deliveries' ? 'active' : ''}`}
         >
           Delivery Tracker ({deliveries.length})
         </button>
@@ -165,54 +157,63 @@ export const Module02_Gate: React.FC<Props> = ({ role: _role }) => {
       {/* VISITORS TAB */}
       {activeTab === 'visitors' && (
         <div className="card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
             <h3>📋 Active & Recent Gate Visitor Entries</h3>
-            <span className="badge badge-paid">Main Entrance Gate Operational</span>
+            <span className="badge badge-paid"><ShieldCheck size={14} /> Gate 1 Operational</span>
           </div>
 
-          <div className="table-responsive">
-            <table>
-              <thead>
-                <tr>
-                  <th>Pass Code</th>
-                  <th>Visitor Name</th>
-                  <th>Flat ID</th>
-                  <th>Purpose</th>
-                  <th>Vehicle No</th>
-                  <th>Check-In Time</th>
-                  <th>Status</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {visitorLogs.map((v) => (
-                  <tr key={v.id}>
-                    <td><strong style={{ color: '#0B4769' }}>{v.passCode || '-'}</strong></td>
-                    <td>
-                      <strong>{v.visitorName}</strong>
-                      <div style={{ fontSize: '0.75rem', color: '#64748B' }}>{v.phone}</div>
-                    </td>
-                    <td><span className="badge badge-ocean">{v.flatId}</span></td>
-                    <td>{v.purpose}</td>
-                    <td>{v.vehicleNo || 'Walk-in'}</td>
-                    <td>{v.entryTime}</td>
-                    <td>
-                      <span className={`badge ${v.status === 'Checked-In' ? 'badge-paid' : v.status === 'Pre-Approved' ? 'badge-amber' : 'badge-pending'}`}>
-                        {v.status} {v.exitTime ? `(Out: ${v.exitTime})` : ''}
-                      </span>
-                    </td>
-                    <td>
-                      {v.status === 'Checked-In' && (
-                        <button onClick={() => handleCheckOut(v.id)} className="btn btn-sm btn-outline" style={{ borderColor: '#991B1B', color: '#991B1B' }}>
-                          <LogOut size={12} /> Mark Exit
-                        </button>
-                      )}
-                    </td>
+          {visitorLogs.length === 0 ? (
+            <div className="text-center" style={{ padding: '2.5rem 1rem' }}>
+              <p style={{ color: '#64748B', fontSize: '0.9rem', marginBottom: '1rem' }}>No active visitor logs recorded yet today.</p>
+              <button onClick={() => setIsVisitorModalOpen(true)} className="btn btn-primary">
+                <Plus size={16} /> Record First Visitor Check-In
+              </button>
+            </div>
+          ) : (
+            <div className="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Pass Code</th>
+                    <th>Visitor Name</th>
+                    <th>Plot Address</th>
+                    <th>Purpose</th>
+                    <th>Vehicle No</th>
+                    <th>Check-In Time</th>
+                    <th>Status</th>
+                    <th>Action</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {visitorLogs.map((v) => (
+                    <tr key={v.id}>
+                      <td><strong style={{ color: '#0B4769' }}>{v.passCode || '-'}</strong></td>
+                      <td>
+                        <strong>{v.visitorName}</strong>
+                        <div style={{ fontSize: '0.75rem', color: '#64748B' }}>{v.phone}</div>
+                      </td>
+                      <td><span className="badge badge-ocean">{v.flatId}</span></td>
+                      <td>{v.purpose}</td>
+                      <td>{v.vehicleNo || 'Walk-in'}</td>
+                      <td>{v.entryTime}</td>
+                      <td>
+                        <span className={`badge ${v.status === 'Checked-In' ? 'badge-paid' : v.status === 'Pre-Approved' ? 'badge-amber' : 'badge-pending'}`}>
+                          {v.status} {v.exitTime ? `(Out: ${v.exitTime})` : ''}
+                        </span>
+                      </td>
+                      <td>
+                        {v.status === 'Checked-In' && (
+                          <button onClick={() => handleCheckOut(v.id)} className="btn btn-sm btn-outline" style={{ borderColor: '#991B1B', color: '#991B1B' }}>
+                            <LogOut size={12} /> Mark Exit
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
 
@@ -220,38 +221,42 @@ export const Module02_Gate: React.FC<Props> = ({ role: _role }) => {
       {activeTab === 'deliveries' && (
         <div className="card">
           <h3>🚚 Package & Delivery Logs</h3>
-          <div className="table-responsive">
-            <table>
-              <thead>
-                <tr>
-                  <th>Provider</th>
-                  <th>Flat ID</th>
-                  <th>Executive Name</th>
-                  <th>Phone</th>
-                  <th>Time</th>
-                  <th>Packages</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {deliveries.map((d) => (
-                  <tr key={d.id}>
-                    <td><strong style={{ color: '#1E6B85' }}>{d.provider}</strong></td>
-                    <td><span className="badge badge-ocean">{d.flatId}</span></td>
-                    <td>{d.executiveName}</td>
-                    <td>{d.phone}</td>
-                    <td>{d.entryTime}</td>
-                    <td>{d.packageCount} PKG</td>
-                    <td>
-                      <span className={`badge ${d.status === 'Delivered to Door' ? 'badge-paid' : 'badge-amber'}`}>
-                        {d.status}
-                      </span>
-                    </td>
+          {deliveries.length === 0 ? (
+            <p style={{ color: '#64748B', fontSize: '0.9rem', marginTop: '0.5rem' }}>No package deliveries recorded today.</p>
+          ) : (
+            <div className="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Provider</th>
+                    <th>Plot Address</th>
+                    <th>Executive Name</th>
+                    <th>Phone</th>
+                    <th>Time</th>
+                    <th>Packages</th>
+                    <th>Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {deliveries.map((d) => (
+                    <tr key={d.id}>
+                      <td><strong style={{ color: '#1E6B85' }}>{d.provider}</strong></td>
+                      <td><span className="badge badge-ocean">{d.flatId}</span></td>
+                      <td>{d.executiveName}</td>
+                      <td>{d.phone}</td>
+                      <td>{d.entryTime}</td>
+                      <td>{d.packageCount} PKG</td>
+                      <td>
+                        <span className={`badge ${d.status === 'Delivered to Door' ? 'badge-paid' : 'badge-amber'}`}>
+                          {d.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
 
@@ -289,16 +294,15 @@ export const Module02_Gate: React.FC<Props> = ({ role: _role }) => {
                   />
                 </div>
                 <div className="form-group">
-                  <label>Destination Flat</label>
-                  <select
+                  <label>Destination Plot / Address</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. L01-P12 or Lane 1 Plot 12"
                     className="form-control"
                     value={newVisitor.flatId}
                     onChange={(e) => setNewVisitor({ ...newVisitor, flatId: e.target.value })}
-                  >
-                    {flats.map(f => (
-                      <option key={f.id} value={f.id}>{f.id} - {f.ownerName}</option>
-                    ))}
-                  </select>
+                  />
                 </div>
               </div>
 
@@ -361,16 +365,15 @@ export const Module02_Gate: React.FC<Props> = ({ role: _role }) => {
                   </div>
 
                   <div className="form-group">
-                    <label>Your Flat</label>
-                    <select
+                    <label>Your Plot Address</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. L01-P12"
                       className="form-control"
                       value={newVisitor.flatId}
                       onChange={(e) => setNewVisitor({ ...newVisitor, flatId: e.target.value })}
-                    >
-                      {flats.map(f => (
-                        <option key={f.id} value={f.id}>{f.id} - {f.ownerName}</option>
-                      ))}
-                    </select>
+                    />
                   </div>
 
                   <button type="submit" className="btn btn-amber" style={{ width: '100%', marginTop: '1rem' }}>
@@ -386,9 +389,8 @@ export const Module02_Gate: React.FC<Props> = ({ role: _role }) => {
                       {generatedPass.passCode}
                     </div>
                     <p style={{ fontWeight: 700 }}>Guest: {generatedPass.visitorName}</p>
-                    <p style={{ fontSize: '0.85rem', color: '#64748B' }}>Destination: Flat {generatedPass.flatId}</p>
+                    <p style={{ fontSize: '0.85rem', color: '#64748B' }}>Destination: Plot {generatedPass.flatId}</p>
 
-                    {/* QR Placeholder */}
                     <div style={{ background: '#FFF', padding: '0.75rem', border: '1px solid #CBD5E1', borderRadius: '8px', marginTop: '1rem', display: 'inline-block' }}>
                       <QrCode size={120} style={{ color: '#031D34' }} />
                     </div>
@@ -438,16 +440,15 @@ export const Module02_Gate: React.FC<Props> = ({ role: _role }) => {
                   </select>
                 </div>
                 <div className="form-group">
-                  <label>Target Flat</label>
-                  <select
+                  <label>Target Plot Address</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. L01-P12"
                     className="form-control"
                     value={newDelivery.flatId}
                     onChange={(e) => setNewDelivery({ ...newDelivery, flatId: e.target.value })}
-                  >
-                    {flats.map(f => (
-                      <option key={f.id} value={f.id}>{f.id} - {f.ownerName}</option>
-                    ))}
-                  </select>
+                  />
                 </div>
               </div>
 

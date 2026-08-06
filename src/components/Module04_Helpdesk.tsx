@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { ComplaintTicket, TicketCategory, UserRole } from '../types';
 import { StorageEngine } from '../services/storage';
-import { Plus, Star, UserCheck } from 'lucide-react';
+import { Plus, Star, UserCheck, Wrench } from 'lucide-react';
 
 interface Props {
   role: UserRole;
@@ -20,7 +20,7 @@ export const Module04_Helpdesk: React.FC<Props> = ({ role }) => {
     description: string;
     priority: 'Low' | 'Medium' | 'High' | 'Emergency';
   }>({
-    flatId: 'A-101',
+    flatId: 'L01-P12',
     category: 'Plumbing',
     title: '',
     description: '',
@@ -103,90 +103,108 @@ export const Module04_Helpdesk: React.FC<Props> = ({ role }) => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      {/* Banner */}
-      <div className="card card-sage" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-        <div>
-          <span className="badge badge-sage" style={{ marginBottom: '0.4rem' }}>MODULE 04</span>
+      {/* Module Banner Header */}
+      <div className="card card-sage module-header-banner">
+        <div className="module-header-title-group">
+          <span className="badge badge-sage">MODULE 04</span>
           <h2>🔧 Complaints & Helpdesk Resolution</h2>
           <p style={{ fontSize: '0.9rem', color: '#031D34' }}>
-            Structured ticket assignment, SLA countdowns, status progression, and 1–5 star resident ratings.
+            Structured ticket assignment, SLA countdowns, status progression, and resident ratings.
           </p>
         </div>
 
-        <button onClick={() => setIsTicketModalOpen(true)} className="btn btn-primary">
-          <Plus size={16} /> Raise Helpdesk Ticket
-        </button>
+        <div className="module-header-actions">
+          <button onClick={() => setIsTicketModalOpen(true)} className="btn btn-primary">
+            <Plus size={16} /> Raise Helpdesk Ticket
+          </button>
+        </div>
       </div>
 
-      {/* Filter categories */}
-      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-        <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>Category:</span>
-        {['ALL', 'Electrical', 'Plumbing', 'Security', 'Cleanliness', 'Gardening', 'Lift/Infrastructure', 'General'].map(cat => (
-          <button
-            key={cat}
-            onClick={() => setFilterCategory(cat)}
-            className={`btn btn-sm ${filterCategory === cat ? 'btn-primary' : 'btn-outline'}`}
-          >
-            {cat}
-          </button>
-        ))}
+      {/* Filter Category Pills */}
+      <div className="card" style={{ padding: '0.85rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+        <span style={{ fontWeight: 700, fontSize: '0.9rem', color: '#0B4769' }}>Category Filter:</span>
+        <div style={{ display: 'flex', gap: '0.4rem', overflowX: 'auto', paddingBottom: '0.2rem' }}>
+          {['ALL', 'Electrical', 'Plumbing', 'Security', 'Cleanliness', 'Gardening', 'Lift/Infrastructure', 'General'].map(cat => (
+            <button
+              key={cat}
+              onClick={() => setFilterCategory(cat)}
+              className={`btn btn-sm ${filterCategory === cat ? 'btn-primary' : 'btn-outline'}`}
+              style={{ borderRadius: '20px', whiteSpace: 'nowrap' }}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Grid of Ticket Cards */}
-      <div className="grid-2">
-        {filteredTickets.map((tkt) => (
-          <div key={tkt.id} className="card" style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span className="badge badge-ocean">{tkt.flatId}</span>
-                <span className="badge badge-sage">{tkt.category}</span>
+      {filteredTickets.length === 0 ? (
+        <div className="card text-center" style={{ padding: '3rem 1.5rem' }}>
+          <Wrench size={40} style={{ color: '#1E6B85', margin: '0 auto 0.75rem auto', opacity: 0.8 }} />
+          <h3 style={{ color: '#0B4769', marginBottom: '0.5rem' }}>No Helpdesk Tickets Logged</h3>
+          <p style={{ fontSize: '0.9rem', color: '#64748B', marginBottom: '1.5rem' }}>
+            All layout infrastructure and services are running smoothly.
+          </p>
+          <button onClick={() => setIsTicketModalOpen(true)} className="btn btn-primary">
+            <Plus size={16} /> Raise New Ticket
+          </button>
+        </div>
+      ) : (
+        <div className="grid-2">
+          {filteredTickets.map((tkt) => (
+            <div key={tkt.id} className="card" style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span className="badge badge-ocean">{tkt.flatId}</span>
+                  <span className="badge badge-sage">{tkt.category}</span>
+                </div>
+                <span className={`badge ${tkt.status === 'Resolved' ? 'badge-paid' : tkt.status === 'In Progress' ? 'badge-amber' : 'badge-overdue'}`}>
+                  {tkt.status}
+                </span>
               </div>
-              <span className={`badge ${tkt.status === 'Resolved' ? 'badge-paid' : tkt.status === 'In Progress' ? 'badge-amber' : 'badge-overdue'}`}>
-                {tkt.status}
-              </span>
-            </div>
 
-            <div>
-              <h4 style={{ color: '#0B4769', marginBottom: '0.25rem' }}>{tkt.title}</h4>
-              <p style={{ fontSize: '0.875rem', color: '#475569' }}>{tkt.description}</p>
-            </div>
+              <div>
+                <h4 style={{ color: '#0B4769', marginBottom: '0.25rem' }}>{tkt.title}</h4>
+                <p style={{ fontSize: '0.875rem', color: '#475569' }}>{tkt.description}</p>
+              </div>
 
-            <div style={{ background: '#F8FAFC', padding: '0.75rem', borderRadius: '8px', border: '1px solid #E2E8F0', fontSize: '0.8rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-              <div><strong>Raised by:</strong> {tkt.residentName} ({tkt.createdAt})</div>
-              {tkt.assignedStaff && <div><strong>Assigned To:</strong> {tkt.assignedStaff}</div>}
-              <div><strong>SLA Target:</strong> {tkt.slaHours} Hours Priority ({tkt.priority})</div>
-            </div>
+              <div style={{ background: '#F8FAFC', padding: '0.75rem', borderRadius: '8px', border: '1px solid #E2E8F0', fontSize: '0.8rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                <div><strong>Raised by:</strong> {tkt.residentName} ({tkt.createdAt})</div>
+                {tkt.assignedStaff && <div><strong>Assigned To:</strong> {tkt.assignedStaff}</div>}
+                <div><strong>SLA Target:</strong> {tkt.slaHours} Hours Priority ({tkt.priority})</div>
+              </div>
 
-            {/* Resident Rating Review */}
-            {tkt.status === 'Resolved' && (
-              <div style={{ background: '#FEF9C3', padding: '0.75rem', borderRadius: '8px', border: '1px solid #FDE047' }}>
-                {tkt.rating ? (
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: '#B45309' }}>
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} size={16} fill={i < tkt.rating! ? '#F59E0B' : 'none'} color="#F59E0B" />
-                      ))}
-                      <strong style={{ marginLeft: '0.4rem' }}>{tkt.rating}/5 Rating</strong>
+              {/* Resident Rating Review */}
+              {tkt.status === 'Resolved' && (
+                <div style={{ background: '#FEF9C3', padding: '0.75rem', borderRadius: '8px', border: '1px solid #FDE047' }}>
+                  {tkt.rating ? (
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: '#B45309' }}>
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} size={16} fill={i < tkt.rating! ? '#F59E0B' : 'none'} color="#F59E0B" />
+                        ))}
+                        <strong style={{ marginLeft: '0.4rem' }}>{tkt.rating}/5 Rating</strong>
+                      </div>
+                      {tkt.feedbackComment && <p style={{ fontSize: '0.8rem', fontStyle: 'italic', marginTop: '0.25rem' }}>"{tkt.feedbackComment}"</p>}
                     </div>
-                    {tkt.feedbackComment && <p style={{ fontSize: '0.8rem', fontStyle: 'italic', marginTop: '0.25rem' }}>"{tkt.feedbackComment}"</p>}
-                  </div>
-                ) : (
-                  <button onClick={() => setRatingTicket(tkt)} className="btn btn-sm btn-amber" style={{ width: '100%' }}>
-                    <Star size={14} /> Rate Resolution Service
-                  </button>
-                )}
-              </div>
-            )}
+                  ) : (
+                    <button onClick={() => setRatingTicket(tkt)} className="btn btn-sm btn-amber" style={{ width: '100%' }}>
+                      <Star size={14} /> Rate Resolution Service
+                    </button>
+                  )}
+                </div>
+              )}
 
-            {/* Action buttons */}
-            {['MC_ADMIN', 'MC_MEMBER', 'MAINTENANCE_STAFF'].includes(role) && tkt.status !== 'Resolved' && (
-              <button onClick={() => setSelectedTicket(tkt)} className="btn btn-sm btn-secondary">
-                <UserCheck size={14} /> Assign & Update Ticket Status
-              </button>
-            )}
-          </div>
-        ))}
-      </div>
+              {/* Action buttons */}
+              {['MC_ADMIN', 'MC_MEMBER', 'MAINTENANCE_STAFF'].includes(role) && tkt.status !== 'Resolved' && (
+                <button onClick={() => setSelectedTicket(tkt)} className="btn btn-sm btn-secondary">
+                  <UserCheck size={14} /> Assign & Update Ticket Status
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* MODAL: CREATE TICKET */}
       {isTicketModalOpen && (
@@ -199,16 +217,15 @@ export const Module04_Helpdesk: React.FC<Props> = ({ role }) => {
             <form onSubmit={handleCreateTicket} className="modal-body">
               <div className="grid-2">
                 <div className="form-group">
-                  <label>Your Flat</label>
-                  <select
+                  <label>Your Plot Address</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. L01-P12"
                     className="form-control"
                     value={newTicket.flatId}
                     onChange={(e) => setNewTicket({ ...newTicket, flatId: e.target.value })}
-                  >
-                    {flats.map(f => (
-                      <option key={f.id} value={f.id}>{f.id} - {f.ownerName}</option>
-                    ))}
-                  </select>
+                  />
                 </div>
                 <div className="form-group">
                   <label>Category</label>

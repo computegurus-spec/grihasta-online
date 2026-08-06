@@ -16,7 +16,7 @@ export const Module05_Amenities: React.FC<Props> = () => {
   const [slotTime, setSlotTime] = useState('04:00 PM - 08:00 PM');
   const [guestsCount, setGuestsCount] = useState(10);
   const [purpose, setPurpose] = useState('');
-  const [flatId, setFlatId] = useState('A-101');
+  const [flatId, setFlatId] = useState('L01-P12');
   const [errorMsg, setErrorMsg] = useState('');
 
   const flats = StorageEngine.getFlats();
@@ -53,7 +53,6 @@ export const Module05_Amenities: React.FC<Props> = () => {
         return false;
       }
       const existingSlot = parseHours(b.slotTime);
-      // Overlap condition: start < existing.end && end > existing.start
       return newSlot.start < existingSlot.end && newSlot.end > existingSlot.start;
     });
 
@@ -91,10 +90,10 @@ export const Module05_Amenities: React.FC<Props> = () => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      {/* Banner */}
-      <div className="card card-sage" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-        <div>
-          <span className="badge badge-sage" style={{ marginBottom: '0.4rem' }}>MODULE 05</span>
+      {/* Module Banner Header */}
+      <div className="card card-sage module-header-banner">
+        <div className="module-header-title-group">
+          <span className="badge badge-sage">MODULE 05</span>
           <h2>🏊 Amenities Booking & Reservation</h2>
           <p style={{ fontSize: '0.9rem', color: '#031D34' }}>
             Instant reservation of Party Hall, Swimming Pool, Gym, and Badminton Courts with auto conflict detection.
@@ -134,46 +133,50 @@ export const Module05_Amenities: React.FC<Props> = () => {
       {/* Active & Past Bookings Table */}
       <div className="card">
         <h3>📋 Layout Reservation Schedule & History</h3>
-        <div className="table-responsive">
-          <table>
-            <thead>
-              <tr>
-                <th>Amenity</th>
-                <th>Flat ID</th>
-                <th>Resident</th>
-                <th>Booking Date</th>
-                <th>Time Slot</th>
-                <th>Purpose</th>
-                <th>Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {bookings.map((b) => (
-                <tr key={b.id}>
-                  <td><strong style={{ color: '#0B4769' }}>{b.amenityName}</strong></td>
-                  <td><span className="badge badge-ocean">{b.flatId}</span></td>
-                  <td>{b.residentName}</td>
-                  <td>{b.bookingDate}</td>
-                  <td><span className="badge badge-amber">{b.slotTime}</span></td>
-                  <td>{b.purpose || '-'}</td>
-                  <td>
-                    <span className={`badge ${b.status === 'Confirmed' ? 'badge-paid' : 'badge-overdue'}`}>
-                      {b.status}
-                    </span>
-                  </td>
-                  <td>
-                    {b.status === 'Confirmed' && (
-                      <button onClick={() => handleCancelBooking(b.id)} className="btn btn-sm btn-outline" style={{ borderColor: '#991B1B', color: '#991B1B' }}>
-                        Cancel Booking
-                      </button>
-                    )}
-                  </td>
+        {bookings.length === 0 ? (
+          <p style={{ color: '#64748B', fontSize: '0.9rem', marginTop: '0.5rem' }}>No active amenity reservations yet. Select an amenity above to reserve your slot.</p>
+        ) : (
+          <div className="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Amenity</th>
+                  <th>Plot Address</th>
+                  <th>Resident</th>
+                  <th>Booking Date</th>
+                  <th>Time Slot</th>
+                  <th>Purpose</th>
+                  <th>Status</th>
+                  <th>Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {bookings.map((b) => (
+                  <tr key={b.id}>
+                    <td><strong style={{ color: '#0B4769' }}>{b.amenityName}</strong></td>
+                    <td><span className="badge badge-ocean">{b.flatId}</span></td>
+                    <td>{b.residentName}</td>
+                    <td>{b.bookingDate}</td>
+                    <td><span className="badge badge-amber">{b.slotTime}</span></td>
+                    <td>{b.purpose || '-'}</td>
+                    <td>
+                      <span className={`badge ${b.status === 'Confirmed' ? 'badge-paid' : 'badge-overdue'}`}>
+                        {b.status}
+                      </span>
+                    </td>
+                    <td>
+                      {b.status === 'Confirmed' && (
+                        <button onClick={() => handleCancelBooking(b.id)} className="btn btn-sm btn-outline" style={{ borderColor: '#991B1B', color: '#991B1B' }}>
+                          Cancel Booking
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* MODAL: BOOK AMENITY */}
@@ -193,16 +196,15 @@ export const Module05_Amenities: React.FC<Props> = () => {
 
               <div className="grid-2">
                 <div className="form-group">
-                  <label>Reserving Flat</label>
-                  <select
+                  <label>Reserving Plot Address</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. L01-P12"
                     className="form-control"
                     value={flatId}
                     onChange={(e) => setFlatId(e.target.value)}
-                  >
-                    {flats.map(f => (
-                      <option key={f.id} value={f.id}>{f.id} - {f.ownerName}</option>
-                    ))}
-                  </select>
+                  />
                 </div>
 
                 <div className="form-group">
