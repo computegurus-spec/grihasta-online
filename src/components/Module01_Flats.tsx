@@ -21,22 +21,25 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
   const [isVehicleModalOpen, setIsVehicleModalOpen] = useState(false);
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
 
+  // Lanes 1 to 15 list
+  const lanesList = Array.from({ length: 15 }, (_, i) => `Lane ${i + 1}`);
+
   // New Flat Form State
   const [newFlat, setNewFlat] = useState({
-    block: 'Block A' as const,
+    block: 'Lane 1',
     floor: 1,
     flatNumber: '',
     ownerName: '',
     ownerPhone: '',
     ownerEmail: '',
     occupancyType: 'Owner Occupied' as const,
-    sqft: 1800,
+    sqft: 2400,
     monthlyDuesRate: 3500
   });
 
   // New Vehicle Form State
   const [newVehicle, setNewVehicle] = useState({
-    flatId: 'A-101',
+    flatId: 'L01-P12',
     type: 'Car' as const,
     registrationNumber: '',
     parkingSlot: '',
@@ -45,7 +48,7 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
 
   // New Domestic Help Form State
   const [newHelp, setNewHelp] = useState({
-    flatId: 'A-101',
+    flatId: 'L01-P12',
     name: '',
     role: 'Maid' as const,
     phone: '',
@@ -64,7 +67,8 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
 
   const handleAddFlat = (e: React.FormEvent) => {
     e.preventDefault();
-    const id = `${newFlat.block.split(' ')[1]}-${newFlat.flatNumber}`;
+    const laneNum = newFlat.block.split(' ')[1];
+    const id = `L${laneNum.padStart(2, '0')}-${newFlat.flatNumber.replace(/\s+/g, '')}`;
     const flatObj: Flat = {
       id,
       block: newFlat.block,
@@ -136,16 +140,16 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
       <div className="card card-sage" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
           <span className="badge badge-sage" style={{ marginBottom: '0.4rem' }}>MODULE 01</span>
-          <h2>🏘️ Resident & Flat Management</h2>
+          <h2>🏡 Resident & Villa Plot Directory</h2>
           <p style={{ fontSize: '0.9rem', color: '#031D34' }}>
-            Complete directory of Blocks A–D, owner & tenant profiles, vehicle parking registrations, and domestic staff.
+            Complete directory across <strong>Lanes 1 to 15</strong>, owner & tenant profiles, vehicle parking registrations, and domestic staff.
           </p>
         </div>
         
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
           {canEdit && (
             <button onClick={() => setIsFlatModalOpen(true)} className="btn btn-primary">
-              <Plus size={16} /> Add Flat Profile
+              <Plus size={16} /> Add Villa / Plot Profile
             </button>
           )}
           <button onClick={() => setIsVehicleModalOpen(true)} className="btn btn-secondary">
@@ -167,7 +171,7 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
             color: activeTab === 'flats' ? '#0B4769' : '#64748B', cursor: 'pointer'
           }}
         >
-          Flats Directory ({flats.length})
+          Layout Plot Directory ({flats.length})
         </button>
         <button
           onClick={() => setActiveTab('vehicles')}
@@ -194,32 +198,46 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
       {/* FLATS TAB CONTENT */}
       {activeTab === 'flats' && (
         <>
-          {/* Controls bar */}
-          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-              <Filter size={16} style={{ color: '#0B4769' }} />
-              <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>Block Filter:</span>
-              {['ALL', 'Block A', 'Block B', 'Block C', 'Block D'].map((b) => (
-                <button
-                  key={b}
-                  onClick={() => setSelectedBlock(b)}
-                  className={`btn btn-sm ${selectedBlock === b ? 'btn-primary' : 'btn-outline'}`}
-                >
-                  {b}
-                </button>
-              ))}
+          {/* Lane Filter Controls Bar */}
+          <div className="card" style={{ padding: '0.85rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Filter size={18} style={{ color: '#0B4769' }} />
+                <span style={{ fontWeight: 700, fontSize: '0.95rem', color: '#0B4769' }}>Filter by Lane (1 to 15):</span>
+              </div>
+
+              <div style={{ position: 'relative', minWidth: '260px' }}>
+                <Search size={16} style={{ position: 'absolute', left: '10px', top: '10px', color: '#64748B' }} />
+                <input
+                  type="text"
+                  placeholder="Search Plot / Resident Name..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="form-control"
+                  style={{ paddingLeft: '32px', fontSize: '0.85rem' }}
+                />
+              </div>
             </div>
 
-            <div style={{ position: 'relative', width: '280px' }}>
-              <Search size={16} style={{ position: 'absolute', left: '10px', top: '10px', color: '#64748B' }} />
-              <input
-                type="text"
-                placeholder="Search Flat / Name..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="form-control"
-                style={{ paddingLeft: '32px' }}
-              />
+            {/* Scrollable Lane Pills Bar (ALL, Lane 1 to Lane 15) */}
+            <div style={{ display: 'flex', gap: '0.4rem', overflowX: 'auto', paddingBottom: '0.3rem' }}>
+              <button
+                onClick={() => setSelectedBlock('ALL')}
+                className={`btn btn-sm ${selectedBlock === 'ALL' ? 'btn-primary' : 'btn-outline'}`}
+                style={{ borderRadius: '20px', whiteSpace: 'nowrap' }}
+              >
+                ALL LANES
+              </button>
+              {lanesList.map((lane) => (
+                <button
+                  key={lane}
+                  onClick={() => setSelectedBlock(lane)}
+                  className={`btn btn-sm ${selectedBlock === lane ? 'btn-primary' : 'btn-outline'}`}
+                  style={{ borderRadius: '20px', whiteSpace: 'nowrap' }}
+                >
+                  {lane}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -229,12 +247,12 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
               <div key={flat.id} className="card" style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <div style={{ background: '#0B4769', color: '#FFF', padding: '0.4rem 0.75rem', borderRadius: '6px', fontWeight: 800, fontSize: '1.1rem' }}>
+                    <div style={{ background: '#0B4769', color: '#FFF', padding: '0.4rem 0.75rem', borderRadius: '6px', fontWeight: 800, fontSize: '1rem' }}>
                       {flat.id}
                     </div>
                     <div>
-                      <span style={{ fontSize: '0.8rem', color: '#64748B', display: 'block' }}>{flat.block} · Floor {flat.floor}</span>
-                      <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>{flat.sqft} sq.ft</span>
+                      <span style={{ fontSize: '0.8rem', color: '#64748B', display: 'block', fontWeight: 600 }}>{flat.block} · {flat.flatNumber}</span>
+                      <span style={{ fontSize: '0.78rem', color: '#475569' }}>{flat.sqft} sq.ft</span>
                     </div>
                   </div>
                   
@@ -247,7 +265,7 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
                   <div style={{ fontSize: '0.85rem' }}>
                     <strong>Owner:</strong> {flat.ownerName}
                   </div>
-                  <div style={{ fontSize: '0.8rem', color: '#64748B', display: 'flex', gap: '0.75rem' }}>
+                  <div style={{ fontSize: '0.8rem', color: '#64748B', display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}><Phone size={12} /> {flat.ownerPhone}</span>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}><Mail size={12} /> {flat.ownerEmail.split('@')[0]}</span>
                   </div>
@@ -261,7 +279,7 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#475569', paddingTop: '0.2rem' }}>
                   <span>🚗 Vehicles: <strong>{flat.vehiclesCount}</strong></span>
-                  <span>🧹 Domestic Help: <strong>{flat.registeredHelpCount}</strong></span>
+                  <span>🧹 Staff: <strong>{flat.registeredHelpCount}</strong></span>
                   <span>💰 Maintenance: <strong>₹{flat.monthlyDuesRate}/mo</strong></span>
                 </div>
               </div>
@@ -279,7 +297,7 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
               <thead>
                 <tr>
                   <th>Reg Number</th>
-                  <th>Flat ID</th>
+                  <th>Plot / Address ID</th>
                   <th>Vehicle Type</th>
                   <th>Parking Slot</th>
                   <th>Owner / Resident</th>
@@ -311,7 +329,7 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
                 <tr>
                   <th>Pass Code</th>
                   <th>Name</th>
-                  <th>Flat ID</th>
+                  <th>Plot Address</th>
                   <th>Role</th>
                   <th>Phone Number</th>
                   <th>Status</th>
@@ -343,30 +361,29 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
         <div className="modal-overlay">
           <div className="modal-content">
             <div className="modal-header">
-              <h3>Add New Flat Directory Record</h3>
+              <h3>Add New Villa / Plot Record</h3>
               <button onClick={() => setIsFlatModalOpen(false)} style={{ color: '#FFF', background: 'none', border: 'none', cursor: 'pointer' }}>X</button>
             </div>
             <form onSubmit={handleAddFlat} className="modal-body">
               <div className="grid-2">
                 <div className="form-group">
-                  <label>Block</label>
+                  <label>Select Lane</label>
                   <select
                     className="form-control"
                     value={newFlat.block}
-                    onChange={(e) => setNewFlat({ ...newFlat, block: e.target.value as any })}
+                    onChange={(e) => setNewFlat({ ...newFlat, block: e.target.value })}
                   >
-                    <option value="Block A">Block A</option>
-                    <option value="Block B">Block B</option>
-                    <option value="Block C">Block C</option>
-                    <option value="Block D">Block D</option>
+                    {lanesList.map(lane => (
+                      <option key={lane} value={lane}>{lane}</option>
+                    ))}
                   </select>
                 </div>
                 <div className="form-group">
-                  <label>Flat Number</label>
+                  <label>Plot / Villa Number</label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. 301"
+                    placeholder="e.g. Plot 42"
                     className="form-control"
                     value={newFlat.flatNumber}
                     onChange={(e) => setNewFlat({ ...newFlat, flatNumber: e.target.value })}
@@ -436,7 +453,7 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
               </div>
 
               <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }}>
-                Save Flat Profile
+                Save Plot Record
               </button>
             </form>
           </div>
@@ -453,14 +470,14 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
             </div>
             <form onSubmit={handleAddVehicle} className="modal-body">
               <div className="form-group">
-                <label>Target Flat</label>
+                <label>Target Address / Plot</label>
                 <select
                   className="form-control"
                   value={newVehicle.flatId}
                   onChange={(e) => setNewVehicle({ ...newVehicle, flatId: e.target.value })}
                 >
                   {flats.map(f => (
-                    <option key={f.id} value={f.id}>{f.id} - {f.ownerName}</option>
+                    <option key={f.id} value={f.id}>{f.id} - {f.ownerName} ({f.block})</option>
                   ))}
                 </select>
               </div>
@@ -494,10 +511,10 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
 
               <div className="grid-2">
                 <div className="form-group">
-                  <label>Parking Slot</label>
+                  <label>Parking Slot / Garage</label>
                   <input
                     type="text"
-                    placeholder="e.g. P-A101"
+                    placeholder="e.g. P-L01-12"
                     className="form-control"
                     value={newVehicle.parkingSlot}
                     onChange={(e) => setNewVehicle({ ...newVehicle, parkingSlot: e.target.value })}
@@ -533,14 +550,14 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
             </div>
             <form onSubmit={handleAddHelp} className="modal-body">
               <div className="form-group">
-                <label>Assigned Flat</label>
+                <label>Assigned Address / Plot</label>
                 <select
                   className="form-control"
                   value={newHelp.flatId}
                   onChange={(e) => setNewHelp({ ...newHelp, flatId: e.target.value })}
                 >
                   {flats.map(f => (
-                    <option key={f.id} value={f.id}>{f.id} - {f.ownerName}</option>
+                    <option key={f.id} value={f.id}>{f.id} - {f.ownerName} ({f.block})</option>
                   ))}
                 </select>
               </div>

@@ -17,10 +17,10 @@ export interface UserProfile {
 }
 
 export interface Flat {
-  id: string; // e.g. "A-101"
-  block: 'Block A' | 'Block B' | 'Block C' | 'Block D';
+  id: string; // e.g. "Lane 1 - Plot 12"
+  block: string; // "Lane 1", "Lane 2", ..., "Lane 15"
   floor: number;
-  flatNumber: string;
+  flatNumber: string; // Plot / Villa number
   ownerName: string;
   ownerPhone: string;
   ownerEmail: string;
