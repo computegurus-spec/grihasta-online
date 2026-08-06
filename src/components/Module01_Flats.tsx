@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { Flat, DomesticHelp, UserRole } from '../types';
 import { StorageEngine } from '../services/storage';
-import { Plus, Search, Filter, Phone, Mail, UserPlus, Camera, Upload, User } from 'lucide-react';
+import { Plus, Search, Filter, Phone, Mail, UserPlus, Camera, User } from 'lucide-react';
 
 interface Props {
   role: UserRole;

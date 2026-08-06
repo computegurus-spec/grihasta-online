@@ -610,7 +610,7 @@ export const Module09_CommunitySocial: React.FC<Props> = ({ role: _role }) => {
                                 if (typeof reader.result === 'string') {
                                   const updated = profiles.map(pr => pr.id === p.id ? { ...pr, photoUrl: reader.result as string } : pr);
                                   setProfiles(updated);
-                                  StorageEngine.saveProfiles(updated);
+                                  StorageEngine.saveSocialProfiles(updated);
                                 }
                               };
                               reader.readAsDataURL(file);

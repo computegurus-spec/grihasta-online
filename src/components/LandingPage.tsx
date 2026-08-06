@@ -242,7 +242,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterPortal }) => {
               Find your perfect home
             </h2>
             <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: '1rem', maxWidth: '520px', margin: '0 auto', lineHeight: 1.7 }}>
-              7 villa configurations across 6 layout designs — starting ₹65 Lakhs.
+              7 villa configurations across 6 layout designs.
             </p>
           </div>
 
@@ -257,9 +257,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterPortal }) => {
               >
                 <div style={{ color: '#E9BB76', fontSize: '0.72rem', fontWeight: 800, letterSpacing: '1.5px', textTransform: 'uppercase', marginBottom: '0.6rem' }}>{v.type}</div>
                 <div style={{ color: '#FFFFFF', fontSize: '1.4rem', fontWeight: 800, marginBottom: '0.4rem' }}>{v.size}</div>
-                {v.price && (
-                  <div style={{ color: '#E9BB76', fontSize: '0.9rem', fontWeight: 700, marginBottom: '0.6rem' }}>{v.price}</div>
-                )}
                 <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.83rem', lineHeight: 1.65 }}>{v.desc}</p>
               </div>
             ))}
