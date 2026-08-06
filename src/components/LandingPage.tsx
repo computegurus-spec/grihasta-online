@@ -25,14 +25,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterPortal }) => {
     { label: 'Status', value: 'Ready to Move' },
     { label: 'Launched', value: 'April 2011' },
     { label: 'Possession', value: 'August 2016' },
-    { label: 'Price Range', value: '₹65L – ₹1.20 Cr' },
     { label: 'Rating', value: '3.9 / 5 ⭐ (MagicBricks)' },
   ];
 
   const villaConfigs = [
     { type: '1 BHK Villa', size: '1,446 Sq.Ft.', desc: 'Compact, cosy single-bedroom villa ideal for individuals or young couples' },
     { type: '2 BHK Villa', size: '1,044 – 1,147 Sq.Ft.', desc: 'Well-designed two-bedroom homes with spacious balconies' },
-    { type: '3 BHK Villa', size: 'Premium', price: '₹98L – ₹1.20 Cr', desc: 'Spacious family homes with open living and dining areas' },
+    { type: '3 BHK Villa', size: '2,000+ Sq.Ft.', desc: 'Spacious family homes with open living and dining areas' },
     { type: '4 BHK Villa', size: '2,540 Sq.Ft.', desc: 'Large luxury villas with ample space for extended families' },
   ];
 
@@ -158,7 +157,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterPortal }) => {
           </p>
 
           <p style={{ color: '#D2E0B0', fontSize: '0.92rem', lineHeight: 1.65, marginBottom: '2.5rem', opacity: 0.85, maxWidth: '580px', margin: '0 auto 2.5rem auto' }}>
-            Villas starting from <strong style={{ color: '#E9BB76' }}>₹65 Lakhs</strong> · Ready to Move · Rated <strong style={{ color: '#E9BB76' }}>3.9★</strong> on MagicBricks
+            Ready to Move · Rated <strong style={{ color: '#E9BB76' }}>3.9★</strong> on MagicBricks
           </p>
 
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
