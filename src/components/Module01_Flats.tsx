@@ -32,7 +32,7 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
     ownerEmail: '',
     occupancyType: 'Owner Occupied' as const,
     sqft: 2400,
-    monthlyDuesRate: 3500
+    quarterlyDuesRate: 9000
   });
 
   // New Domestic Help Form State
@@ -68,7 +68,7 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
       ownerEmail: newFlat.ownerEmail,
       occupancyType: newFlat.occupancyType,
       sqft: Number(newFlat.sqft),
-      monthlyDuesRate: Number(newFlat.monthlyDuesRate),
+      quarterlyDuesRate: Number(newFlat.quarterlyDuesRate),
       registeredHelpCount: 0
     };
     const updated = [flatObj, ...flats];
@@ -246,7 +246,7 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#475569', paddingTop: '0.2rem' }}>
                     <span>🧹 Staff: <strong>{flat.registeredHelpCount}</strong></span>
-                    <span>💰 Maintenance: <strong>₹{flat.monthlyDuesRate}/mo</strong></span>
+                    <span>💰 Maintenance: <strong>₹{flat.quarterlyDuesRate}/quarter</strong></span>
                   </div>
                 </div>
               ))}
@@ -382,12 +382,12 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
                   </select>
                 </div>
                 <div className="form-group">
-                  <label>Monthly Dues (₹)</label>
+                  <label>Quarterly Dues (₹) — Standard: ₹9,000</label>
                   <input
                     type="number"
                     className="form-control"
-                    value={newFlat.monthlyDuesRate}
-                    onChange={(e) => setNewFlat({ ...newFlat, monthlyDuesRate: Number(e.target.value) })}
+                    value={newFlat.quarterlyDuesRate}
+                    onChange={(e) => setNewFlat({ ...newFlat, quarterlyDuesRate: Number(e.target.value) })}
                   />
                 </div>
               </div>

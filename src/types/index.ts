@@ -28,7 +28,7 @@ export interface Flat {
   tenantPhone?: string;
   occupancyType: 'Owner Occupied' | 'Rented' | 'Vacant';
   sqft: number;
-  monthlyDuesRate: number;
+  quarterlyDuesRate: number; // ₹9,000 per quarter (Jan-Mar, Apr-Jun, Jul-Sep, Oct-Dec)
   registeredHelpCount: number;
 }
 
@@ -71,13 +71,14 @@ export interface DeliveryLog {
 export interface MaintenanceDue {
   id: string;
   flatId: string;
-  month: string; // e.g. "August 2026"
-  amount: number;
+  quarter: string; // e.g. "Q3 2026 (Jul–Sep)"
+  amount: number; // ₹9,000 per quarter
   dueDate: string;
   paidDate?: string;
   paymentMode?: 'UPI' | 'Bank Transfer' | 'Cash' | 'Cheque';
   transactionId?: string;
   status: 'Paid' | 'Pending' | 'Overdue';
+  generatedBy: 'Auto' | 'Admin'; // only Admin or auto-generation creates dues
 }
 
 export interface LedgerExpense {
