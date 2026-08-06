@@ -28,7 +28,7 @@ interface Props {
 }
 
 export const Module09_CommunitySocial: React.FC<Props> = ({ role: _role }) => {
-  const [activeTab, setActiveTab] = useState<'feed' | 'marketplace' | 'lost_found' | 'recommendations' | 'carpool' | 'groups' | 'profiles' | 'why_different'>('feed');
+  const [activeTab, setActiveTab] = useState<'feed' | 'marketplace' | 'lost_found' | 'recommendations' | 'carpool' | 'groups' | 'profiles'>('feed');
 
   // State
   const [posts, setPosts] = useState<CommunityPost[]>(StorageEngine.getCommunityPosts());
@@ -305,8 +305,7 @@ export const Module09_CommunitySocial: React.FC<Props> = ({ role: _role }) => {
           { id: 'recommendations', label: `🏷️ Vendor Reviews (${recommendations.length})` },
           { id: 'carpool', label: `🚗 Carpooling (${carpools.length})` },
           { id: 'groups', label: `👨‍👩‍👧 Interest Groups (${groups.length})` },
-          { id: 'profiles', label: `👤 Resident Directory (${profiles.length})` },
-          { id: 'why_different', label: `🛡️ Why grihasta vs Facebook` }
+          { id: 'profiles', label: `👤 Resident Directory (${profiles.length})` }
         ].map((t) => (
           <button
             key={t.id}
