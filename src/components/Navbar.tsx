@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import type { UserRole } from '../types';
-import { Shield, Home, Building2, Wallet, Wrench, Calendar, Bell, Users, BarChart3, BookOpen, Globe, Lock, ChevronRight, Menu, X, HeartHandshake } from 'lucide-react';
+import { Shield, Home, Building2, Wallet, Wrench, Calendar, Bell, Users, BarChart3, BookOpen, Globe, Lock, ChevronRight, Menu, X, HeartHandshake, LogOut } from 'lucide-react';
 
 interface NavbarProps {
   activeRole: UserRole;
@@ -9,7 +9,8 @@ interface NavbarProps {
   setActiveModule: (moduleIndex: number) => void;
   onOpenManual: () => void;
   onGoHome: () => void;
-  onOpenRequestAccess: () => void;
+  onOpenRequestAccess?: () => void;
+  onSignOut: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -19,7 +20,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   setActiveModule,
   onOpenManual,
   onGoHome,
-  onOpenRequestAccess
+  onSignOut
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -255,8 +256,13 @@ export const Navbar: React.FC<NavbarProps> = ({
             <Globe size={14} /> Home Page
           </button>
 
-          <button onClick={onOpenRequestAccess} className="btn btn-sm btn-amber" style={{ fontWeight: 800, fontSize: '0.78rem' }} title="Login or Register">
-            <Lock size={14} /> Login
+          <button
+            onClick={onSignOut}
+            className="btn btn-sm btn-secondary"
+            style={{ background: '#991B1B', color: '#FFF', border: 'none', fontWeight: 800, fontSize: '0.78rem' }}
+            title="Sign out of portal"
+          >
+            <LogOut size={14} /> Sign Out
           </button>
 
           <button onClick={onOpenManual} className="btn btn-sm btn-outline" style={{ borderColor: '#E9BB76', color: '#E9BB76', fontSize: '0.78rem' }}>

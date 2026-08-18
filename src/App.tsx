@@ -48,6 +48,7 @@ export function App() {
         onOpenManual={() => setIsManualOpen(true)}
         onGoHome={() => setShowLanding(true)}
         onOpenRequestAccess={() => setIsAccessRequestOpen(true)}
+        onSignOut={() => setShowLanding(true)}
       />
 
       {/* Main Container */}

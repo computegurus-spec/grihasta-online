@@ -1,4 +1,5 @@
 import { StorageEngine } from './storage';
+import { getLaneForVillaNumber } from '../utils/laneMapping';
 import type { UserRole } from '../types';
 
 export interface PendingUserApproval {
@@ -118,6 +119,43 @@ export const DbConnector = {
       const approved = JSON.parse(localStorage.getItem('grihasta_approved_mc_users') || '[]');
       approved.push({ mobile: item.mobile, villaNumber: item.villaNumber, role: item.requestedRole });
       localStorage.setItem('grihasta_approved_mc_users', JSON.stringify(approved));
+
+      // Synchronize with Villa Master Directory
+      const flats = StorageEngine.getFlats();
+      const cleanNum = item.villaNumber.replace(/[^0-9]/g, '');
+      const existing = flats.find(f => f.flatNumber === item.villaNumber || f.flatNumber.includes(cleanNum));
+
+      if (existing) {
+        if (item.occupancyType === 'Owner') {
+          existing.ownerName = item.name;
+          existing.ownerPhone = item.mobile;
+          existing.occupancyType = 'Owner Occupied';
+        } else {
+          existing.tenantName = item.name;
+          existing.tenantPhone = item.mobile;
+          existing.occupancyType = 'Rented';
+        }
+      } else {
+        const laneName = getLaneForVillaNumber(item.villaNumber);
+        flats.push({
+          id: `f-${Date.now()}`,
+          block: laneName,
+          floor: 1,
+          sqft: 1446,
+          flatNumber: item.villaNumber.startsWith('Plot') || item.villaNumber.startsWith('Villa') ? item.villaNumber : `Plot ${item.villaNumber}`,
+          ownerName: item.occupancyType === 'Owner' ? item.name : 'Registered Owner',
+          ownerPhone: item.occupancyType === 'Owner' ? item.mobile : '+91 99000 15844',
+          ownerEmail: 'resident@grihasta.online',
+          tenantName: item.occupancyType === 'Tenant' ? item.name : undefined,
+          tenantPhone: item.occupancyType === 'Tenant' ? item.mobile : undefined,
+          occupancyType: item.occupancyType === 'Owner' ? 'Owner Occupied' : 'Rented',
+          quarterlyDuesRate: 9000,
+          registeredHelpCount: 0,
+          adultsCount: 2,
+          kidsCount: 0
+        });
+      }
+      StorageEngine.saveFlats(flats);
     }
   },
 
