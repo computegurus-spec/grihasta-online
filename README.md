@@ -2,118 +2,102 @@
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-18.0-61dafb.svg)](https://reactjs.org/)
-[![Vite](https://img.shields.io/badge/Vite-6.0-646cff.svg)](https://vitejs.dev/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Vite](https://img.shields.io/badge/Vite-8.0-646cff.svg)](https://vitejs.dev/)
+[![Status](https://img.shields.io/badge/Phase_2-Release_Ready-success.svg)](#)
 
-A complete digital management portal for **Artha Grihasta Residential Layout**, built to eliminate reliance on WhatsApp groups, paper registers, and manual cash follow-ups. No app installation required — works seamlessly on any smartphone, tablet, or desktop browser.
-
----
-
-## 🎨 Color Palette & Design System
-
-Custom Earthy & Ocean-Forest theme tailored for Artha Grihasta Layout:
-- **Midnight Dark (`#031D34`)**: Primary navigation bar & modal headers
-- **Ocean Navy (`#0B4769`)**: Main headings, active tabs, and primary actions
-- **Teal Blue (`#1E6B85`)**: Secondary buttons & active module badges
-- **Deep Forest Green (`#31532C`)**: Badges & verified statuses
-- **Warm Amber (`#E9BB76`)**: Star ratings, visitor QR badges, & highlights
-- **Sage Light Green (`#D2E0B0`)**: Soft card backgrounds & soft tags
-- **Soft Cream (`#EFEED2`)**: Clean, low-glare background
+A comprehensive digital management portal built specifically for **Artha Grihasta Residential Layout** in Malur, Kolar, Karnataka. Designed to eliminate reliance on fragmented WhatsApp groups, paper registers, and manual cash follow-ups. No mobile app download required — works seamlessly on any smartphone, tablet, or desktop browser.
 
 ---
 
-## ⚡ Core Modules Overview
+## 📚 Project Documentation Directory (`docs/`)
 
-### 🏘️ Module 01: Resident & Flat Management
-- Directory of Blocks A–D, owner & tenant profiles, vehicle parking registrations (Cars, Bikes, EV slots), and registered domestic staff (maids, cooks, drivers).
+Comprehensive documentation is maintained in the `docs/` folder:
 
-### 🛡️ Module 02: Security & Gate Management
-- Digital visitor gate entry log, **Resident Pre-Approved Visitor Pass Generator** with digital QR preview and WhatsApp share integration, and delivery log tracker (Amazon, Swiggy, Zomato, Blinkit).
-
-### 💰 Module 03: Maintenance & Finance
-- Flat maintenance dues tracking (Paid, Pending, Overdue for August 2026). One-click payment marking with transaction UTR recording, **WhatsApp Defaulter Reminders**, and society expense ledger.
-
-### 🔧 Module 04: Complaints & Helpdesk
-- Category ticket submission (Electrical, Plumbing, Security, Cleanliness, Gardening, Lift). MC staff assignment with target SLA timers, status progression (`Open` ➔ `In Progress` ➔ `Resolved`), and resident 1–5 star ratings.
-
-### 🏊 Module 05: Amenities Booking
-- Reservations for Artha Clubhouse Party Hall, Swimming Pool, Badminton Court 1, and Gymnasium with **automated time-range conflict detection**.
-
-### 📢 Module 06: Communication Hub
-- Official MC circular notice board, **Red Emergency Broadcast Banner Trigger**, and community voting polls with real-time percentage bars.
-
-### 👷 Module 07: Staff Attendance
-- Roster log for security guards, housekeeping, plumbers, electricians, and gardeners. One-click duty clock-in/out and **MC Payroll Input Summary Generator**.
-
-### 📊 Module 08: MC Executive Admin Dashboard
-- Real-time KPIs: Maintenance Collection Rate %, Open Helpdesk Tickets, Staff On-Site, Layout Occupancy %, defaulter snapshot, and **8-Week Implementation Roadmap**.
-
-### 🤝 Module 09: Community & Social Hub
-- **MC-Verified Resident Profiles** (move-in year, hobbies, profession, privacy settings).
-- **Layout Community Feed** (category posts, likes & comments tied to verified flat numbers).
-- **Neighbour Marketplace** (buy/sell items & "Free to Take" giveaways).
-- **Lost & Found Board** (pets, keys, found items).
-- **Trusted Vendor Recommendations** (rated plumbers, electricians, painters).
-- **Carpooling & Ride Share** (daily routes to Whitefield, Koramangala, Electronic City).
-- **Layout Interest Groups** (Parents Forum, Weekend Cyclists, Gardening Club).
+* 🏛️ **[Architecture & System Design](docs/ARCHITECTURE_AND_DESIGN.md)** — Layout parameters (40 Acres, 400 Villas, 15 Lanes), demographic water & garbage models, 9 Core Portal Modules, Auth0 SSO strategy, and PostgreSQL database schema.
+* 🚀 **[Progress & Completed Work Log](docs/PROGRESS_AND_COMPLETED_WORK.md)** — Full chronological changelog of completed features, mobile responsiveness overhaul, 1-click MC access approvals, live notification bell, and commit history.
 
 ---
 
-## 👥 Role-Based Access Control (RBAC)
+## 📐 Layout Parameters & Data Model
 
-Supports 6 interactive role views accessible via the top role switcher:
-1. **MC Administrator** (Full admin access to all modules, finance, reports, settings)
-2. **MC Member** (Elevated access for tickets, staff, notices)
-3. **Resident (Owner)** (Flat directory, dues payment, visitor passes, amenity bookings, complaints)
-4. **Resident (Tenant)** (Limited resident access: visitor passes, tickets, amenities, notices)
-5. **Security Guard** (Gate access: visitor log, pass scanner, delivery tracker, shift check-in)
-6. **Maintenance Staff** (Staff view: assigned tickets, attendance logging, status updates)
-
----
-
-## 💵 Annual Cost Breakdown
-
-| Item | Cost |
+| Metric | Specification |
 |---|---|
-| Domain (`grihasta.online`) Renewal | ~ ₹1,500 / year |
-| Cloud Hosting (Vercel / Netlify) | ~ ₹7,200 / year |
-| Business Email (`mc@grihasta.online`) | ~ ₹3,600 / year |
-| SMS / WhatsApp Gateway | ~ ₹2,000 / year |
-| **Development Cost** | **₹0 — Built In-House** |
-| **Annual Total** | **~ ₹14,300 / year** |
+| **Layout Location** | Sonnur, Alambadi PO, Malur Taluk, Kolar, Karnataka 563160 |
+| **Total Layout Area** | 40 Acres |
+| **Total Villa / Plot Units** | 400 Units (Plots 1 to 400) |
+| **Master Lane Mapping** | 15 Lanes (Lanes 1 to 15) |
+| **Waste Collection Rule** | Segregate wet/dry waste. Daily collection **between 7:30 AM and 9:00 AM**. |
+| **Vehicle Parking Rule** | Strict flat slot or visitor bay parking. Driveway parking prohibited. |
 
 ---
 
-## 🛠️ Local Development & Build Setup
+## 🔑 MC Temporary Test Credentials
+
+To log in and test Management Committee Admin privileges:
+* **Email:** `test@test.com`
+* **Password:** `test`
+
+*(Tomorrow, MC members will log in via Auth0 / Gmail IDs and reset their passwords on first login).*
+
+---
+
+## ⚡ 9 Core Portal Modules Overview
+
+1. **🏘️ Module 01: Resident & Villa Directory** — 400-Villa directory mapped across Lanes 1–15, owner & tenant profiles, vehicle parking registrations, domestic staff pass codes, and water/waste demographic calculators.
+2. **🛡️ Module 02: Multi-Gate Security & Visitors** — Entrance tracking for **Main Gate** and **Water Tank Back Gate**, pre-approved WhatsApp QR visitor passes, and delivery logs.
+3. **💰 Module 03: Maintenance & Finance** — Quarterly dues ledgers (₹9,000/quarter), WhatsApp defaulter reminders, transaction UTR logging, and society expense tracker.
+4. **🔧 Module 04: Complaints & Helpdesk** — Ticket logging with category tags, SLA timers, staff assignment, and resident 1–5 star ratings.
+5. **🏊 Module 05: Amenities Reservations** — Clubhouse, Swimming Pool, Badminton Court, and **Car Washing Bay** bookings with time-collision detection.
+6. **📢 Module 06: Communication Hub** — Official MC notices, **Red Emergency Broadcast Trigger**, and resident voting polls.
+7. **👷 Module 07: Staff Duty Roster** — Security, housekeeping, and maintenance duty clock-in/out logs with MC payroll summary generator.
+8. **📊 Module 08: MC Executive Admin Dashboard** — Collection rate KPIs, occupancy %, **⚡ 1-Click Resident Access Request Approval Queue**, and Cloud DB connector setup card.
+9. **🤝 Module 09: Community Social Hub** — Verified resident feed, neighbour marketplace, carpooling directory, lost & found, and local vendor recommendations.
+
+---
+
+## 👥 3-Tier Access Portals (6 RBAC Roles)
+
+1. **👑 Management & Committee:** `MC_ADMIN` (Full Admin), `MC_MEMBER` (Elevated Admin)
+2. **🏡 Resident Portal:** `RESIDENT_OWNER` (Owner View), `RESIDENT_TENANT` (Tenant View)
+3. **🛡️ Operations & Staff:** `SECURITY_GUARD` (Gate Operations), `MAINTENANCE_STAFF` (Duty Tickets)
+
+---
+
+## 🛠️ Local Development & Deployment
 
 ### Prerequisites
 - Node.js 18+ and npm
 
-### Installation
+### Quick Start
 ```bash
 # Clone the repository
 git clone https://github.com/computegurus-spec/grihasta-online.git
 
-# Navigate to directory
+# Navigate to project root
 cd grihasta-online
 
 # Install dependencies
 npm install
 
-# Start local dev server
+# Run dev server
 npm run dev
 ```
 
 Open `http://localhost:5173/` in your browser.
 
-### Production Build
+### Build Verification & Deployment
 ```bash
+# Test production build locally
 npm run build
+
+# Push commits to trigger automatic Vercel deployment
+git push origin main
 ```
 
 ---
 
-## 📄 Reference & Documentation
-- Official Resident Manual: [Artha Grihasta Google Site Manual](https://sites.google.com/view/grihastamanual/home)
-- Prepared for: Management Committee, Grihasta Residential Layout
-- Author: Sadish Sugumaran (`sadish.sugumaran@gmail.com` · +91 99000 15844)
+## 📄 Contact & Maintenance
+- **Domain:** [grihasta.online](https://grihasta.online)
+- **Official MC Email:** `mc@grihasta.online`
+- **Lead Developer & MC Ownership:** Sadish Sugumaran (`+91 99000 15844`)
+- **Annual Development Cost:** ₹0 (Built in-house with full MC ownership)
