@@ -255,8 +255,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             <Globe size={14} /> Home Page
           </button>
 
-          <button onClick={onOpenRequestAccess} className="btn btn-sm btn-outline" style={{ borderColor: '#86EFAC', color: '#D2E0B0', fontSize: '0.78rem' }} title="Submit Access Request to MC">
-            <Shield size={14} /> Request Access
+          <button onClick={onOpenRequestAccess} className="btn btn-sm btn-amber" style={{ fontWeight: 800, fontSize: '0.78rem' }} title="Login or Register">
+            <Lock size={14} /> Login
           </button>
 
           <button onClick={onOpenManual} className="btn btn-sm btn-outline" style={{ borderColor: '#E9BB76', color: '#E9BB76', fontSize: '0.78rem' }}>

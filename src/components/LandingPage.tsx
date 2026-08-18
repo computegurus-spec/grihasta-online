@@ -111,7 +111,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterPortal }) => {
               display: 'flex', alignItems: 'center', gap: '0.4rem', transition: 'all 0.2s ease'
             }}
           >
-            Resident / MC Login <ArrowRight size={14} />
+            Login <ArrowRight size={14} />
           </button>
         </div>
 
@@ -149,7 +149,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterPortal }) => {
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', width: '100%'
               }}
             >
-              Resident / MC Login <ArrowRight size={16} />
+              Login <ArrowRight size={16} />
             </button>
           </div>
         )}
@@ -513,7 +513,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterPortal }) => {
                 color: '#E9BB76', borderRadius: '8px', padding: '0.5rem 1.1rem',
                 fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem'
               }}>
-                Resident / MC Login <ArrowRight size={13} />
+                Login <ArrowRight size={13} />
               </button>
             </div>
           </div>
