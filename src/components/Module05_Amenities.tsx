@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { Amenity, AmenityBooking, UserRole } from '../types';
 import { StorageEngine } from '../services/storage';
-import { Calendar, Clock, Users } from 'lucide-react';
+import { Calendar, Clock, Users, Car, Building, Waves, Activity, Dumbbell, Info } from 'lucide-react';
 
 interface Props {
   role: UserRole;
@@ -14,7 +14,7 @@ export const Module05_Amenities: React.FC<Props> = () => {
   const [selectedAmenity, setSelectedAmenity] = useState<Amenity | null>(null);
   const [bookingDate, setBookingDate] = useState('2026-08-15');
   const [slotTime, setSlotTime] = useState('04:00 PM - 08:00 PM');
-  const [guestsCount, setGuestsCount] = useState(10);
+  const [guestsCount, setGuestsCount] = useState(1);
   const [purpose, setPurpose] = useState('');
   const [flatId, setFlatId] = useState('L01-P12');
   const [errorMsg, setErrorMsg] = useState('');
@@ -24,6 +24,26 @@ export const Module05_Amenities: React.FC<Props> = () => {
   const handleOpenBooking = (amenity: Amenity) => {
     setSelectedAmenity(amenity);
     setErrorMsg('');
+    if (amenity.name.includes('Car Washing')) {
+      setSlotTime('08:00 AM - 09:00 AM');
+      setGuestsCount(1);
+      setPurpose('Weekly Sedan/SUV Pressure Wash');
+    } else {
+      setSlotTime('04:00 PM - 08:00 PM');
+      setGuestsCount(10);
+      setPurpose('');
+    }
+  };
+
+  const renderAmenityIcon = (iconName: string) => {
+    switch (iconName) {
+      case 'Building': return <Building size={20} style={{ color: '#0B4769' }} />;
+      case 'Waves': return <Waves size={20} style={{ color: '#0284C7' }} />;
+      case 'Activity': return <Activity size={20} style={{ color: '#16A34A' }} />;
+      case 'Dumbbell': return <Dumbbell size={20} style={{ color: '#D97706' }} />;
+      case 'Car': return <Car size={20} style={{ color: '#2563EB' }} />;
+      default: return <Calendar size={20} style={{ color: '#0B4769' }} />;
+    }
   };
 
   const handleConfirmBooking = (e: React.FormEvent) => {
@@ -31,7 +51,6 @@ export const Module05_Amenities: React.FC<Props> = () => {
     if (!selectedAmenity) return;
 
     // CONFLICT DETECTION ENGINE
-    // Parse hours to check time overlaps
     const parseHours = (slotStr: string) => {
       const parts = slotStr.split(' - ');
       if (parts.length !== 2) return { start: 0, end: 24 };
@@ -94,9 +113,9 @@ export const Module05_Amenities: React.FC<Props> = () => {
       <div className="card card-sage module-header-banner">
         <div className="module-header-title-group">
           <span className="badge badge-sage">MODULE 05</span>
-          <h2>🏊 Amenities Booking & Reservation</h2>
+          <h2>🏊 Amenities Booking & Car Wash Reservations</h2>
           <p style={{ fontSize: '0.9rem', color: '#031D34' }}>
-            Instant reservation of Party Hall, Swimming Pool, Gym, and Badminton Courts with auto conflict detection.
+            Instant reservation of Clubhouse Party Hall, Swimming Pool, Gym, Badminton Courts, and <strong>Car Washing Bay</strong> with auto conflict detection.
           </p>
         </div>
       </div>
@@ -106,7 +125,10 @@ export const Module05_Amenities: React.FC<Props> = () => {
         {amenities.map((amn) => (
           <div key={amn.id} className="card" style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h3 style={{ color: '#0B4769', fontSize: '1.15rem' }}>{amn.name}</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                {renderAmenityIcon(amn.iconName)}
+                <h3 style={{ color: '#0B4769', fontSize: '1.15rem', margin: 0 }}>{amn.name}</h3>
+              </div>
               <span className="badge badge-ocean"><Users size={12} /> Cap: {amn.capacity}</span>
             </div>
 
@@ -128,6 +150,17 @@ export const Module05_Amenities: React.FC<Props> = () => {
             </button>
           </div>
         ))}
+      </div>
+
+      {/* MC Member Discussion Callout on Car Wash Arrangement */}
+      <div style={{ background: '#F0F9FF', padding: '0.85rem 1.25rem', borderRadius: '10px', border: '1px solid #BAE6FD', display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+        <Info size={20} style={{ color: '#0284C7', flexShrink: 0, marginTop: '2px' }} />
+        <div>
+          <h5 style={{ color: '#0369A1', margin: 0, fontSize: '0.88rem' }}>🚗 Car Washing Facility Arrangement Note</h5>
+          <p style={{ fontSize: '0.82rem', color: '#0C4A6E', marginTop: '0.2rem' }}>
+            Car washing facility slots are currently enabled. Management Committee (MC) members are further discussing exact water metering & pressure washer arrangements. Suggest additional guidelines to MC desk!
+          </p>
+        </div>
       </div>
 
       {/* Active & Past Bookings Table */}
@@ -227,19 +260,36 @@ export const Module05_Amenities: React.FC<Props> = () => {
                     value={slotTime}
                     onChange={(e) => setSlotTime(e.target.value)}
                   >
-                    <option value="06:00 AM - 08:00 AM">06:00 AM - 08:00 AM</option>
-                    <option value="08:00 AM - 10:00 AM">08:00 AM - 10:00 AM</option>
-                    <option value="10:00 AM - 01:00 PM">10:00 AM - 01:00 PM</option>
-                    <option value="04:00 PM - 08:00 PM">04:00 PM - 08:00 PM</option>
-                    <option value="08:00 PM - 11:00 PM">08:00 PM - 11:00 PM</option>
+                    {selectedAmenity.name.includes('Car Washing') ? (
+                      <>
+                        <option value="07:00 AM - 08:00 AM">07:00 AM - 08:00 AM</option>
+                        <option value="08:00 AM - 09:00 AM">08:00 AM - 09:00 AM</option>
+                        <option value="09:00 AM - 10:00 AM">09:00 AM - 10:00 AM</option>
+                        <option value="10:00 AM - 11:00 AM">10:00 AM - 11:00 AM</option>
+                        <option value="11:00 AM - 12:00 PM">11:00 AM - 12:00 PM</option>
+                        <option value="02:00 PM - 03:00 PM">02:00 PM - 03:00 PM</option>
+                        <option value="03:00 PM - 04:00 PM">03:00 PM - 04:00 PM</option>
+                        <option value="04:00 PM - 05:00 PM">04:00 PM - 05:00 PM</option>
+                        <option value="05:00 PM - 06:00 PM">05:00 PM - 06:00 PM</option>
+                      </>
+                    ) : (
+                      <>
+                        <option value="06:00 AM - 08:00 AM">06:00 AM - 08:00 AM</option>
+                        <option value="08:00 AM - 10:00 AM">08:00 AM - 10:00 AM</option>
+                        <option value="10:00 AM - 01:00 PM">10:00 AM - 01:00 PM</option>
+                        <option value="04:00 PM - 08:00 PM">04:00 PM - 08:00 PM</option>
+                        <option value="08:00 PM - 11:00 PM">08:00 PM - 11:00 PM</option>
+                      </>
+                    )}
                   </select>
                 </div>
 
                 <div className="form-group">
-                  <label>Number of Guests</label>
+                  <label>Capacity / Vehicles / Guests</label>
                   <input
                     type="number"
                     required
+                    min="1"
                     max={selectedAmenity.capacity}
                     className="form-control"
                     value={guestsCount}
@@ -249,10 +299,10 @@ export const Module05_Amenities: React.FC<Props> = () => {
               </div>
 
               <div className="form-group">
-                <label>Event Purpose</label>
+                <label>Booking Purpose / Note</label>
                 <input
                   type="text"
-                  placeholder="e.g. Birthday Party / Family Gathering"
+                  placeholder={selectedAmenity.name.includes('Car Washing') ? 'e.g. Wash Sedan / SUV' : 'e.g. Birthday Party / Family Gathering'}
                   className="form-control"
                   value={purpose}
                   onChange={(e) => setPurpose(e.target.value)}
@@ -269,3 +319,4 @@ export const Module05_Amenities: React.FC<Props> = () => {
     </div>
   );
 };
+

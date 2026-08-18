@@ -31,6 +31,8 @@ export interface Flat {
   quarterlyDuesRate: number; // ₹9,000 per quarter (Jan-Mar, Apr-Jun, Jul-Sep, Oct-Dec)
   registeredHelpCount: number;
   ownerPhoto?: string; // Base64 data URL or remote photo URL
+  adultsCount?: number; // Number of adult residents (default 2)
+  kidsCount?: number; // Number of child residents (default 0)
 }
 
 export interface DomesticHelp {
@@ -56,6 +58,7 @@ export interface VisitorLog {
   approvedBy?: string;
   status: 'Pre-Approved' | 'Checked-In' | 'Checked-Out' | 'Denied';
   vehicleNo?: string;
+  gateLocation?: 'Main Gate (Front)' | 'Back Gate (Water Tank)';
 }
 
 export interface DeliveryLog {
@@ -67,6 +70,7 @@ export interface DeliveryLog {
   entryTime: string;
   status: 'At Gate' | 'Delivered to Door' | 'Left at Gate';
   packageCount: number;
+  gateLocation?: 'Main Gate (Front)' | 'Back Gate (Water Tank)';
 }
 
 export interface MaintenanceDue {

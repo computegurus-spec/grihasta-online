@@ -12,6 +12,8 @@ export const Module02_Gate: React.FC<Props> = ({ role: _role }) => {
   const [deliveries, setDeliveries] = useState<DeliveryLog[]>(StorageEngine.getDeliveries());
   const [activeTab, setActiveTab] = useState<'visitors' | 'deliveries'>('visitors');
 
+  const [gateFilter, setGateFilter] = useState<'ALL' | 'Main Gate (Front)' | 'Back Gate (Water Tank)'>('ALL');
+
   // New Visitor Check-In Form
   const [isVisitorModalOpen, setIsVisitorModalOpen] = useState(false);
   const [newVisitor, setNewVisitor] = useState({
@@ -19,12 +21,13 @@ export const Module02_Gate: React.FC<Props> = ({ role: _role }) => {
     phone: '',
     flatId: 'L01-P12',
     purpose: 'Guest' as const,
-    vehicleNo: ''
+    vehicleNo: '',
+    gateLocation: 'Main Gate (Front)' as 'Main Gate (Front)' | 'Back Gate (Water Tank)'
   });
 
   // Pre-approved Pass Modal (Resident feature)
   const [isPassModalOpen, setIsPassModalOpen] = useState(false);
-  const [generatedPass, setGeneratedPass] = useState<{ passCode: string; visitorName: string; flatId: string } | null>(null);
+  const [generatedPass, setGeneratedPass] = useState<{ passCode: string; visitorName: string; flatId: string; gateLocation: string } | null>(null);
 
   // Delivery Modal
   const [isDeliveryModalOpen, setIsDeliveryModalOpen] = useState(false);
@@ -34,10 +37,17 @@ export const Module02_Gate: React.FC<Props> = ({ role: _role }) => {
     executiveName: '',
     phone: '',
     status: 'Delivered to Door' as const,
-    packageCount: 1
+    packageCount: 1,
+    gateLocation: 'Main Gate (Front)' as 'Main Gate (Front)' | 'Back Gate (Water Tank)'
   });
 
+  const filteredVisitorLogs = visitorLogs.filter(v => 
+    gateFilter === 'ALL' || (v.gateLocation || 'Main Gate (Front)') === gateFilter
+  );
 
+  const filteredDeliveries = deliveries.filter(d => 
+    gateFilter === 'ALL' || (d.gateLocation || 'Main Gate (Front)') === gateFilter
+  );
 
   const handleCheckInVisitor = (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,7 +61,8 @@ export const Module02_Gate: React.FC<Props> = ({ role: _role }) => {
       passCode: `VP-${Math.floor(1000 + Math.random() * 9000)}`,
       entryTime: timeNow,
       status: 'Checked-In',
-      vehicleNo: newVisitor.vehicleNo
+      vehicleNo: newVisitor.vehicleNo,
+      gateLocation: newVisitor.gateLocation
     };
 
     const updated = [log, ...visitorLogs];
@@ -73,7 +84,8 @@ export const Module02_Gate: React.FC<Props> = ({ role: _role }) => {
     const passObj = {
       passCode: code,
       visitorName: newVisitor.visitorName || 'Expected Guest',
-      flatId: newVisitor.flatId
+      flatId: newVisitor.flatId,
+      gateLocation: newVisitor.gateLocation
     };
     setGeneratedPass(passObj);
 
@@ -87,7 +99,8 @@ export const Module02_Gate: React.FC<Props> = ({ role: _role }) => {
       passCode: code,
       entryTime: 'Pending Entry',
       status: 'Pre-Approved',
-      approvedBy: 'Resident'
+      approvedBy: 'Resident',
+      gateLocation: newVisitor.gateLocation
     };
     const updated = [log, ...visitorLogs];
     setVisitorLogs(updated);
@@ -105,7 +118,8 @@ export const Module02_Gate: React.FC<Props> = ({ role: _role }) => {
       phone: newDelivery.phone,
       entryTime: timeNow,
       status: newDelivery.status,
-      packageCount: Number(newDelivery.packageCount)
+      packageCount: Number(newDelivery.packageCount),
+      gateLocation: newDelivery.gateLocation
     };
     const updated = [del, ...deliveries];
     setDeliveries(updated);
@@ -138,19 +152,56 @@ export const Module02_Gate: React.FC<Props> = ({ role: _role }) => {
         </div>
       </div>
 
+      {/* Gate Filter Pills & Operational Status Banner */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', background: '#F8FAFC', padding: '0.85rem 1.25rem', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <span style={{ fontWeight: 700, fontSize: '0.85rem', color: '#0B4769' }}>Filter Gate Location:</span>
+          <button
+            onClick={() => setGateFilter('ALL')}
+            className={`btn btn-sm ${gateFilter === 'ALL' ? 'btn-primary' : 'btn-outline'}`}
+            style={{ borderRadius: '20px' }}
+          >
+            All Gates ({visitorLogs.length + deliveries.length})
+          </button>
+          <button
+            onClick={() => setGateFilter('Main Gate (Front)')}
+            className={`btn btn-sm ${gateFilter === 'Main Gate (Front)' ? 'btn-primary' : 'btn-outline'}`}
+            style={{ borderRadius: '20px' }}
+          >
+            Main Gate (Front)
+          </button>
+          <button
+            onClick={() => setGateFilter('Back Gate (Water Tank)')}
+            className={`btn btn-sm ${gateFilter === 'Back Gate (Water Tank)' ? 'btn-primary' : 'btn-outline'}`}
+            style={{ borderRadius: '20px' }}
+          >
+            Back Gate (Water Tank)
+          </button>
+        </div>
+
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <span className="badge badge-paid" style={{ fontSize: '0.75rem' }}>
+            <ShieldCheck size={13} /> Main Gate (Front) Active
+          </span>
+          <span className="badge badge-sage" style={{ fontSize: '0.75rem' }}>
+            <ShieldCheck size={13} /> Back Gate (Water Tank) Active
+          </span>
+        </div>
+      </div>
+
       {/* Pill Navigation Tabs */}
       <div className="subnav-tabs">
         <button
           onClick={() => setActiveTab('visitors')}
           className={`subnav-tab-btn ${activeTab === 'visitors' ? 'active' : ''}`}
         >
-          Gate Visitor Logs ({visitorLogs.length})
+          Gate Visitor Logs ({filteredVisitorLogs.length})
         </button>
         <button
           onClick={() => setActiveTab('deliveries')}
           className={`subnav-tab-btn ${activeTab === 'deliveries' ? 'active' : ''}`}
         >
-          Delivery Tracker ({deliveries.length})
+          Delivery Tracker ({filteredDeliveries.length})
         </button>
       </div>
 
@@ -159,14 +210,14 @@ export const Module02_Gate: React.FC<Props> = ({ role: _role }) => {
         <div className="card">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
             <h3>📋 Active & Recent Gate Visitor Entries</h3>
-            <span className="badge badge-paid"><ShieldCheck size={14} /> Gate 1 Operational</span>
+            <span style={{ fontSize: '0.8rem', color: '#64748B' }}>Showing {filteredVisitorLogs.length} logs for {gateFilter}</span>
           </div>
 
-          {visitorLogs.length === 0 ? (
+          {filteredVisitorLogs.length === 0 ? (
             <div className="text-center" style={{ padding: '2.5rem 1rem' }}>
-              <p style={{ color: '#64748B', fontSize: '0.9rem', marginBottom: '1rem' }}>No active visitor logs recorded yet today.</p>
+              <p style={{ color: '#64748B', fontSize: '0.9rem', marginBottom: '1rem' }}>No active visitor logs recorded for this gate selection today.</p>
               <button onClick={() => setIsVisitorModalOpen(true)} className="btn btn-primary">
-                <Plus size={16} /> Record First Visitor Check-In
+                <Plus size={16} /> Record Visitor Check-In
               </button>
             </div>
           ) : (
@@ -176,6 +227,7 @@ export const Module02_Gate: React.FC<Props> = ({ role: _role }) => {
                   <tr>
                     <th>Pass Code</th>
                     <th>Visitor Name</th>
+                    <th>Gate Location</th>
                     <th>Plot Address</th>
                     <th>Purpose</th>
                     <th>Vehicle No</th>
@@ -185,14 +237,19 @@ export const Module02_Gate: React.FC<Props> = ({ role: _role }) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {visitorLogs.map((v) => (
+                  {filteredVisitorLogs.map((v) => (
                     <tr key={v.id}>
                       <td><strong style={{ color: '#0B4769' }}>{v.passCode || '-'}</strong></td>
                       <td>
                         <strong>{v.visitorName}</strong>
                         <div style={{ fontSize: '0.75rem', color: '#64748B' }}>{v.phone}</div>
                       </td>
-                      <td><span className="badge badge-ocean">{v.flatId}</span></td>
+                      <td>
+                        <span className={`badge ${v.gateLocation === 'Back Gate (Water Tank)' ? 'badge-amber' : 'badge-ocean'}`}>
+                          {v.gateLocation || 'Main Gate (Front)'}
+                        </span>
+                      </td>
+                      <td><span className="badge badge-sage">{v.flatId}</span></td>
                       <td>{v.purpose}</td>
                       <td>{v.vehicleNo || 'Walk-in'}</td>
                       <td>{v.entryTime}</td>
@@ -221,14 +278,15 @@ export const Module02_Gate: React.FC<Props> = ({ role: _role }) => {
       {activeTab === 'deliveries' && (
         <div className="card">
           <h3>🚚 Package & Delivery Logs</h3>
-          {deliveries.length === 0 ? (
-            <p style={{ color: '#64748B', fontSize: '0.9rem', marginTop: '0.5rem' }}>No package deliveries recorded today.</p>
+          {filteredDeliveries.length === 0 ? (
+            <p style={{ color: '#64748B', fontSize: '0.9rem', marginTop: '0.5rem' }}>No package deliveries recorded for this gate selection today.</p>
           ) : (
             <div className="table-responsive">
               <table>
                 <thead>
                   <tr>
                     <th>Provider</th>
+                    <th>Gate Location</th>
                     <th>Plot Address</th>
                     <th>Executive Name</th>
                     <th>Phone</th>
@@ -238,10 +296,15 @@ export const Module02_Gate: React.FC<Props> = ({ role: _role }) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {deliveries.map((d) => (
+                  {filteredDeliveries.map((d) => (
                     <tr key={d.id}>
                       <td><strong style={{ color: '#1E6B85' }}>{d.provider}</strong></td>
-                      <td><span className="badge badge-ocean">{d.flatId}</span></td>
+                      <td>
+                        <span className={`badge ${d.gateLocation === 'Back Gate (Water Tank)' ? 'badge-amber' : 'badge-ocean'}`}>
+                          {d.gateLocation || 'Main Gate (Front)'}
+                        </span>
+                      </td>
+                      <td><span className="badge badge-sage">{d.flatId}</span></td>
                       <td>{d.executiveName}</td>
                       <td>{d.phone}</td>
                       <td>{d.entryTime}</td>
@@ -265,10 +328,22 @@ export const Module02_Gate: React.FC<Props> = ({ role: _role }) => {
         <div className="modal-overlay">
           <div className="modal-content">
             <div className="modal-header">
-              <h3>Log New Visitor at Main Gate</h3>
+              <h3>Log New Visitor Check-In</h3>
               <button onClick={() => setIsVisitorModalOpen(false)} style={{ color: '#FFF', background: 'none', border: 'none', cursor: 'pointer' }}>X</button>
             </div>
             <form onSubmit={handleCheckInVisitor} className="modal-body">
+              <div className="form-group">
+                <label>Entry Gate Location</label>
+                <select
+                  className="form-control"
+                  value={newVisitor.gateLocation}
+                  onChange={(e) => setNewVisitor({ ...newVisitor, gateLocation: e.target.value as any })}
+                >
+                  <option value="Main Gate (Front)">Main Gate (Front)</option>
+                  <option value="Back Gate (Water Tank)">Back Gate (Near Water Tank)</option>
+                </select>
+              </div>
+
               <div className="form-group">
                 <label>Visitor Name</label>
                 <input
@@ -353,6 +428,18 @@ export const Module02_Gate: React.FC<Props> = ({ role: _role }) => {
               {!generatedPass ? (
                 <form onSubmit={handleGeneratePass}>
                   <div className="form-group">
+                    <label>Preferred Entry Gate</label>
+                    <select
+                      className="form-control"
+                      value={newVisitor.gateLocation}
+                      onChange={(e) => setNewVisitor({ ...newVisitor, gateLocation: e.target.value as any })}
+                    >
+                      <option value="Main Gate (Front)">Main Gate (Front)</option>
+                      <option value="Back Gate (Water Tank)">Back Gate (Near Water Tank)</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group">
                     <label>Guest Name</label>
                     <input
                       type="text"
@@ -384,7 +471,7 @@ export const Module02_Gate: React.FC<Props> = ({ role: _role }) => {
                 <div style={{ textAlign: 'center', padding: '1rem 0' }}>
                   <div style={{ background: '#F8FAFC', padding: '1.5rem', borderRadius: '12px', border: '2px dashed #0B4769', display: 'inline-block', width: '100%', maxWidth: '320px' }}>
                     <h4 style={{ color: '#0B4769' }}>GRIHASTA GATE PASS</h4>
-                    <span className="badge badge-amber" style={{ margin: '0.5rem 0' }}>VALID FOR ENTRY TODAY</span>
+                    <span className="badge badge-amber" style={{ margin: '0.5rem 0' }}>VALID AT: {generatedPass.gateLocation}</span>
                     <div style={{ background: '#031D34', color: '#E9BB76', padding: '0.75rem', borderRadius: '8px', fontSize: '1.5rem', fontWeight: 800, margin: '1rem 0', letterSpacing: '2px' }}>
                       {generatedPass.passCode}
                     </div>
@@ -398,7 +485,7 @@ export const Module02_Gate: React.FC<Props> = ({ role: _role }) => {
 
                   <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', marginTop: '1.25rem' }}>
                     <button
-                      onClick={() => alert(`Pass code ${generatedPass.passCode} copied to clipboard to share on WhatsApp!`)}
+                      onClick={() => alert(`Pass code ${generatedPass.passCode} for ${generatedPass.gateLocation} copied to clipboard!`)}
                       className="btn btn-accent"
                     >
                       <Share2 size={16} /> Share via WhatsApp
@@ -423,6 +510,18 @@ export const Module02_Gate: React.FC<Props> = ({ role: _role }) => {
               <button onClick={() => setIsDeliveryModalOpen(false)} style={{ color: '#FFF', background: 'none', border: 'none', cursor: 'pointer' }}>X</button>
             </div>
             <form onSubmit={handleAddDelivery} className="modal-body">
+              <div className="form-group">
+                <label>Entry Gate Location</label>
+                <select
+                  className="form-control"
+                  value={newDelivery.gateLocation}
+                  onChange={(e) => setNewDelivery({ ...newDelivery, gateLocation: e.target.value as any })}
+                >
+                  <option value="Main Gate (Front)">Main Gate (Front)</option>
+                  <option value="Back Gate (Water Tank)">Back Gate (Near Water Tank)</option>
+                </select>
+              </div>
+
               <div className="grid-2">
                 <div className="form-group">
                   <label>Provider</label>

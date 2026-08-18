@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import type { Flat, DomesticHelp, UserRole } from '../types';
 import { StorageEngine } from '../services/storage';
-import { Plus, Search, Filter, Phone, Mail, UserPlus, Camera, User } from 'lucide-react';
+import { getLaneForVillaNumber, MASTER_LANE_LIST, calculateWaterRequirement, calculateGarbageOutput } from '../utils/laneMapping';
+import { Plus, Search, Filter, Phone, Mail, UserPlus, Camera, User, MapPin, Droplets, Trash2, Users, Sparkles, Map } from 'lucide-react';
 
 interface Props {
   role: UserRole;
@@ -18,12 +19,13 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
   // Modals
   const [isFlatModalOpen, setIsFlatModalOpen] = useState(false);
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
+  const [isMasterListModalOpen, setIsMasterListModalOpen] = useState(false);
 
   // Photo Edit Modal for existing flats
   const [editingFlatPhoto, setEditingFlatPhoto] = useState<Flat | null>(null);
 
   // Lanes 1 to 15 list
-  const lanesList = Array.from({ length: 15 }, (_, i) => `Lane ${i + 1}`);
+  const lanesList = MASTER_LANE_LIST;
 
   // New Flat Form State
   const [newFlat, setNewFlat] = useState({
@@ -36,8 +38,27 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
     occupancyType: 'Owner Occupied' as const,
     sqft: 2400,
     quarterlyDuesRate: 9000,
-    ownerPhoto: ''
+    ownerPhoto: '',
+    adultsCount: 2,
+    kidsCount: 1
   });
+
+  // Handle dynamic auto-mapping of lane from villa number
+  const handleFlatNumberChange = (val: string) => {
+    const autoMappedLane = getLaneForVillaNumber(val);
+    setNewFlat(prev => ({
+      ...prev,
+      flatNumber: val,
+      block: autoMappedLane
+    }));
+  };
+
+  // Layout Occupancy & Utility Totals
+  const totalAdults = flats.reduce((sum, f) => sum + (f.adultsCount ?? 2), 0);
+  const totalKids = flats.reduce((sum, f) => sum + (f.kidsCount ?? 0), 0);
+  const totalOccupants = totalAdults + totalKids;
+  const totalDailyWaterLiters = flats.reduce((sum, f) => sum + calculateWaterRequirement(f.adultsCount ?? 2, f.kidsCount ?? 0), 0);
+  const totalDailyGarbageKg = flats.reduce((sum, f) => sum + calculateGarbageOutput(f.adultsCount ?? 2, f.kidsCount ?? 0), 0);
 
   // New Domestic Help Form State
   const [newHelp, setNewHelp] = useState({
@@ -91,7 +112,9 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
       sqft: Number(newFlat.sqft),
       quarterlyDuesRate: Number(newFlat.quarterlyDuesRate),
       registeredHelpCount: 0,
-      ownerPhoto: newFlat.ownerPhoto || undefined
+      ownerPhoto: newFlat.ownerPhoto || undefined,
+      adultsCount: Number(newFlat.adultsCount),
+      kidsCount: Number(newFlat.kidsCount)
     };
     const updated = [flatObj, ...flats];
     setFlats(updated);
@@ -107,7 +130,9 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
       occupancyType: 'Owner Occupied',
       sqft: 2400,
       quarterlyDuesRate: 9000,
-      ownerPhoto: ''
+      ownerPhoto: '',
+      adultsCount: 2,
+      kidsCount: 1
     });
   };
 
@@ -155,6 +180,9 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
         </div>
         
         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <button onClick={() => setIsMasterListModalOpen(true)} className="btn btn-secondary">
+            <Map size={16} /> Master Lane List (1–15)
+          </button>
           {canEdit && (
             <button onClick={() => setIsFlatModalOpen(true)} className="btn btn-primary">
               <Plus size={16} /> Add Villa / Plot Profile
@@ -163,6 +191,42 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
           <button onClick={() => setIsHelpModalOpen(true)} className="btn btn-accent">
             <UserPlus size={16} /> Add Domestic Staff
           </button>
+        </div>
+      </div>
+
+      {/* Layout Occupancy & Resource Estimation Bar */}
+      <div className="grid-3" style={{ gap: '0.75rem' }}>
+        <div className="card" style={{ padding: '0.85rem 1rem', background: '#F0F9FF', border: '1px solid #BAE6FD', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <div style={{ background: '#0284C7', color: '#FFF', padding: '0.6rem', borderRadius: '8px' }}>
+            <Users size={20} />
+          </div>
+          <div>
+            <span style={{ fontSize: '0.75rem', color: '#0369A1', fontWeight: 700, textTransform: 'uppercase' }}>Layout Population</span>
+            <h4 style={{ margin: 0, color: '#0C4A6E' }}>{totalOccupants} Total Residents</h4>
+            <span style={{ fontSize: '0.78rem', color: '#0284C7' }}>👨‍👩‍👧 {totalAdults} Adults · 👶 {totalKids} Kids</span>
+          </div>
+        </div>
+
+        <div className="card" style={{ padding: '0.85rem 1rem', background: '#F0FDF4', border: '1px solid #BBF7D0', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <div style={{ background: '#16A34A', color: '#FFF', padding: '0.6rem', borderRadius: '8px' }}>
+            <Droplets size={20} />
+          </div>
+          <div>
+            <span style={{ fontSize: '0.75rem', color: '#15803D', fontWeight: 700, textTransform: 'uppercase' }}>Daily Water Requirement</span>
+            <h4 style={{ margin: 0, color: '#14532D' }}>{(totalDailyWaterLiters / 1000).toFixed(1)} KLD ({totalDailyWaterLiters.toLocaleString()} L/day)</h4>
+            <span style={{ fontSize: '0.78rem', color: '#16A34A' }}>Est. @ 135L/adult + 90L/child</span>
+          </div>
+        </div>
+
+        <div className="card" style={{ padding: '0.85rem 1rem', background: '#FEF3C7', border: '1px solid #FDE68A', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <div style={{ background: '#D97706', color: '#FFF', padding: '0.6rem', borderRadius: '8px' }}>
+            <Trash2 size={20} />
+          </div>
+          <div>
+            <span style={{ fontSize: '0.75rem', color: '#B45309', fontWeight: 700, textTransform: 'uppercase' }}>Daily Garbage Output</span>
+            <h4 style={{ margin: 0, color: '#78350F' }}>{totalDailyGarbageKg.toFixed(1)} kg / day</h4>
+            <span style={{ fontSize: '0.78rem', color: '#D97706' }}>Est. @ 0.4kg/adult + 0.25kg/child</span>
+          </div>
         </div>
       </div>
 
@@ -223,14 +287,14 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
               >
                 ALL LANES
               </button>
-              {lanesList.map((lane) => (
+              {lanesList.map((m) => (
                 <button
-                  key={lane}
-                  onClick={() => setSelectedBlock(lane)}
-                  className={`btn btn-sm ${selectedBlock === lane ? 'btn-primary' : 'btn-outline'}`}
+                  key={m.laneName}
+                  onClick={() => setSelectedBlock(m.laneName)}
+                  className={`btn btn-sm ${selectedBlock === m.laneName ? 'btn-primary' : 'btn-outline'}`}
                   style={{ borderRadius: '20px', whiteSpace: 'nowrap' }}
                 >
-                  {lane}
+                  {m.laneName} (Plots {m.startPlot}-{m.endPlot})
                 </button>
               ))}
             </div>
@@ -251,77 +315,96 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
             </div>
           ) : (
             <div className="grid-3">
-              {filteredFlats.map((flat) => (
-                <div key={flat.id} className="card" style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <div style={{ background: '#0B4769', color: '#FFF', padding: '0.4rem 0.75rem', borderRadius: '6px', fontWeight: 800, fontSize: '1rem' }}>
-                        {flat.id}
-                      </div>
-                      <div>
-                        <span style={{ fontSize: '0.8rem', color: '#64748B', display: 'block', fontWeight: 600 }}>{flat.block} · {flat.flatNumber}</span>
-                        <span style={{ fontSize: '0.78rem', color: '#475569' }}>{flat.sqft} sq.ft</span>
-                      </div>
-                    </div>
-                    
-                    <span className={`badge ${flat.occupancyType === 'Owner Occupied' ? 'badge-sage' : flat.occupancyType === 'Rented' ? 'badge-ocean' : 'badge-pending'}`}>
-                      {flat.occupancyType}
-                    </span>
-                  </div>
+              {filteredFlats.map((flat) => {
+                const adults = flat.adultsCount ?? 2;
+                const kids = flat.kidsCount ?? 0;
+                const waterReq = calculateWaterRequirement(adults, kids);
+                const garbageQty = calculateGarbageOutput(adults, kids);
 
-                  <div style={{ background: '#F8FAFC', padding: '0.75rem', borderRadius: '8px', border: '1px solid #E2E8F0', display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-                    <div style={{ position: 'relative', flexShrink: 0 }}>
-                      {flat.ownerPhoto ? (
-                        <img
-                          src={flat.ownerPhoto}
-                          alt={flat.ownerName}
-                          style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #0B4769' }}
-                        />
-                      ) : (
-                        <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#0B4769', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '1.2rem' }}>
-                          {flat.ownerName.charAt(0) || 'O'}
+                return (
+                  <div key={flat.id} className="card" style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <div style={{ background: '#0B4769', color: '#FFF', padding: '0.4rem 0.75rem', borderRadius: '6px', fontWeight: 800, fontSize: '1rem' }}>
+                          {flat.id}
                         </div>
-                      )}
-                      {canEdit && (
-                        <button
-                          onClick={() => setEditingFlatPhoto(flat)}
-                          title="Upload Owner Photo"
-                          style={{
-                            position: 'absolute', bottom: '-4px', right: '-4px',
-                            background: '#E9BB76', color: '#031D34', border: '1px solid #FFF',
-                            borderRadius: '50%', width: '22px', height: '22px',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.15)'
-                          }}
-                        >
-                          <Camera size={12} />
-                        </button>
-                      )}
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', flex: 1 }}>
-                      <div style={{ fontSize: '0.85rem' }}>
-                        <strong>Owner:</strong> {flat.ownerName}
-                      </div>
-                      <div style={{ fontSize: '0.78rem', color: '#64748B', display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}><Phone size={11} /> {flat.ownerPhone}</span>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}><Mail size={11} /> {flat.ownerEmail.split('@')[0]}</span>
-                      </div>
-
-                      {flat.tenantName && (
-                        <div style={{ borderTop: '1px dashed #CBD5E1', paddingTop: '0.25rem', marginTop: '0.25rem', fontSize: '0.8rem' }}>
-                          <strong>Tenant:</strong> {flat.tenantName} ({flat.tenantPhone})
+                        <div>
+                          <span style={{ fontSize: '0.8rem', color: '#64748B', display: 'block', fontWeight: 600 }}>{flat.block} · {flat.flatNumber}</span>
+                          <span style={{ fontSize: '0.78rem', color: '#475569' }}>{flat.sqft} sq.ft</span>
                         </div>
-                      )}
+                      </div>
+                      
+                      <span className={`badge ${flat.occupancyType === 'Owner Occupied' ? 'badge-sage' : flat.occupancyType === 'Rented' ? 'badge-ocean' : 'badge-pending'}`}>
+                        {flat.occupancyType}
+                      </span>
+                    </div>
+
+                    <div style={{ background: '#F8FAFC', padding: '0.75rem', borderRadius: '8px', border: '1px solid #E2E8F0', display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                      <div style={{ position: 'relative', flexShrink: 0 }}>
+                        {flat.ownerPhoto ? (
+                          <img
+                            src={flat.ownerPhoto}
+                            alt={flat.ownerName}
+                            style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #0B4769' }}
+                          />
+                        ) : (
+                          <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#0B4769', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '1.2rem' }}>
+                            {flat.ownerName.charAt(0) || 'O'}
+                          </div>
+                        )}
+                        {canEdit && (
+                          <button
+                            onClick={() => setEditingFlatPhoto(flat)}
+                            title="Upload Owner Photo"
+                            style={{
+                              position: 'absolute', bottom: '-4px', right: '-4px',
+                              background: '#E9BB76', color: '#031D34', border: '1px solid #FFF',
+                              borderRadius: '50%', width: '22px', height: '22px',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.15)'
+                            }}
+                          >
+                            <Camera size={12} />
+                          </button>
+                        )}
+                      </div>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', flex: 1 }}>
+                        <div style={{ fontSize: '0.85rem' }}>
+                          <strong>Owner:</strong> {flat.ownerName}
+                        </div>
+                        <div style={{ fontSize: '0.78rem', color: '#64748B', display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}><Phone size={11} /> {flat.ownerPhone}</span>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}><Mail size={11} /> {flat.ownerEmail.split('@')[0]}</span>
+                        </div>
+
+                        {flat.tenantName && (
+                          <div style={{ borderTop: '1px dashed #CBD5E1', paddingTop: '0.25rem', marginTop: '0.25rem', fontSize: '0.8rem' }}>
+                            <strong>Tenant:</strong> {flat.tenantName} ({flat.tenantPhone})
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Member Breakdown & Utility Metrics */}
+                    <div style={{ background: '#F1F5F9', padding: '0.5rem 0.75rem', borderRadius: '6px', fontSize: '0.78rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', color: '#031D34', fontWeight: 600 }}>
+                        <span>👨‍👩‍👧 Members: {adults + kids} total</span>
+                        <span>({adults} Adults, {kids} Kids)</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', color: '#64748B' }}>
+                        <span>💧 Est. Water: <strong>{waterReq} L/day</strong></span>
+                        <span>♻️ Est. Waste: <strong>{garbageQty} kg/day</strong></span>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#475569', paddingTop: '0.2rem' }}>
+                      <span>🧹 Staff: <strong>{flat.registeredHelpCount}</strong></span>
+                      <span>💰 Dues: <strong>₹{flat.quarterlyDuesRate}/qtr</strong></span>
                     </div>
                   </div>
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#475569', paddingTop: '0.2rem' }}>
-                    <span>🧹 Staff: <strong>{flat.registeredHelpCount}</strong></span>
-                    <span>💰 Maintenance: <strong>₹{flat.quarterlyDuesRate}/quarter</strong></span>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </>
@@ -379,27 +462,32 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
             <form onSubmit={handleAddFlat} className="modal-body">
               <div className="grid-2">
                 <div className="form-group">
-                  <label>Select Lane</label>
+                  <label>Plot / Villa Number</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Plot 42 or Villa 105"
+                    className="form-control"
+                    value={newFlat.flatNumber}
+                    onChange={(e) => handleFlatNumberChange(e.target.value)}
+                  />
+                  {newFlat.flatNumber && (
+                    <span style={{ fontSize: '0.75rem', color: '#15803D', fontWeight: 600, display: 'block', marginTop: '0.2rem' }}>
+                      ⚡ Auto-mapped: {newFlat.block}
+                    </span>
+                  )}
+                </div>
+                <div className="form-group">
+                  <label>Assigned Lane (Auto-Selected)</label>
                   <select
                     className="form-control"
                     value={newFlat.block}
                     onChange={(e) => setNewFlat({ ...newFlat, block: e.target.value })}
                   >
-                    {lanesList.map(lane => (
-                      <option key={lane} value={lane}>{lane}</option>
+                    {lanesList.map(m => (
+                      <option key={m.laneName} value={m.laneName}>{m.laneName} (Plots {m.startPlot}-{m.endPlot})</option>
                     ))}
                   </select>
-                </div>
-                <div className="form-group">
-                  <label>Plot / Villa Number</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Plot 42"
-                    className="form-control"
-                    value={newFlat.flatNumber}
-                    onChange={(e) => setNewFlat({ ...newFlat, flatNumber: e.target.value })}
-                  />
                 </div>
               </div>
 
@@ -436,6 +524,32 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
                     className="form-control"
                     value={newFlat.ownerEmail}
                     onChange={(e) => setNewFlat({ ...newFlat, ownerEmail: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              {/* Adults and Kids Member Breakdown */}
+              <div className="grid-2" style={{ background: '#F8FAFC', padding: '0.75rem', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                <div className="form-group">
+                  <label>👨 Adult Members (Count)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    required
+                    className="form-control"
+                    value={newFlat.adultsCount}
+                    onChange={(e) => setNewFlat({ ...newFlat, adultsCount: Number(e.target.value) })}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>👶 Kid Members (Count)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    required
+                    className="form-control"
+                    value={newFlat.kidsCount}
+                    onChange={(e) => setNewFlat({ ...newFlat, kidsCount: Number(e.target.value) })}
                   />
                 </div>
               </div>
@@ -487,6 +601,50 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
                 Save Plot Record
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: MASTER LANE LIST MAPPING */}
+      {isMasterListModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ maxWidth: '640px' }}>
+            <div className="modal-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Map size={20} style={{ color: '#E9BB76' }} />
+                <h3>🗺️ Lane-Wise Master List & Villa Mapping</h3>
+              </div>
+              <button onClick={() => setIsMasterListModalOpen(false)} style={{ color: '#FFF', background: 'none', border: 'none', cursor: 'pointer' }}>X</button>
+            </div>
+            <div className="modal-body" style={{ maxHeight: '75vh', overflowY: 'auto' }}>
+              <p style={{ fontSize: '0.88rem', color: '#475569', marginBottom: '1rem' }}>
+                Grihasta layout contains <strong>400 Villas / Plots</strong> systematically mapped across <strong>Lanes 1 to 15</strong>. The system automatically assigns entered villa numbers to their designated lane.
+              </p>
+              <div className="table-responsive">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Lane Name</th>
+                      <th>Villa / Plot Number Range</th>
+                      <th>Total Plots in Lane</th>
+                      <th>Layout Zone</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {MASTER_LANE_LIST.map((lane) => (
+                      <tr key={lane.laneNumber}>
+                        <td><strong style={{ color: '#0B4769' }}>{lane.laneName}</strong></td>
+                        <td><span className="badge badge-sage">Plot {lane.startPlot} to Plot {lane.endPlot}</span></td>
+                        <td>{lane.endPlot - lane.startPlot + 1} Plots</td>
+                        <td style={{ fontSize: '0.78rem', color: '#64748B' }}>
+                          {lane.laneNumber <= 5 ? 'North Sector' : lane.laneNumber <= 10 ? 'Central Sector' : 'South Sector'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
       )}
