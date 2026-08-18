@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import type { UserRole } from '../types';
-import { Shield, Home, Building2, Wallet, Wrench, Calendar, Bell, Users, BarChart3, BookOpen, Globe, Lock, ChevronRight, Menu, X, HeartHandshake, LogOut } from 'lucide-react';
+import { DbConnector } from '../services/dbConnector';
+import { Shield, Home, Building2, Wallet, Wrench, Calendar, Bell, Users, BarChart3, BookOpen, Globe, Lock, ChevronRight, Menu, X, HeartHandshake, LogOut, CheckCircle2, UserCheck, AlertCircle } from 'lucide-react';
 
 interface NavbarProps {
   activeRole: UserRole;
@@ -23,7 +24,12 @@ export const Navbar: React.FC<NavbarProps> = ({
   onSignOut
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const notifRef = useRef<HTMLDivElement>(null);
+
+  const pendingApprovals = DbConnector.getPendingApprovals().filter(a => a.status === 'Pending');
+  const notificationCount = pendingApprovals.length + 2; // Pending approvals + active layout alerts
 
   const roleGroups = [
     {
@@ -268,6 +274,129 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button onClick={onOpenManual} className="btn btn-sm btn-outline" style={{ borderColor: '#E9BB76', color: '#E9BB76', fontSize: '0.78rem' }}>
             <BookOpen size={14} /> Manual
           </button>
+
+          {/* Top Right Notifications Bell */}
+          <div ref={notifRef} style={{ position: 'relative' }}>
+            <button
+              onClick={() => setNotificationsOpen(!notificationsOpen)}
+              className="btn btn-sm"
+              style={{
+                background: 'rgba(255,255,255,0.12)',
+                color: '#E9BB76',
+                border: '1px solid rgba(233,187,118,0.3)',
+                padding: '0.35rem 0.6rem',
+                position: 'relative',
+                borderRadius: '6px',
+                cursor: 'pointer'
+              }}
+              title="Layout & Access Notifications"
+            >
+              <Bell size={15} />
+              {notificationCount > 0 && (
+                <span
+                  style={{
+                    position: 'absolute',
+                    top: '-5px',
+                    right: '-5px',
+                    background: '#DC2626',
+                    color: '#FFF',
+                    fontSize: '0.65rem',
+                    fontWeight: 800,
+                    width: '18px',
+                    height: '18px',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 2px 6px rgba(0,0,0,0.4)',
+                    border: '1px solid #FFF'
+                  }}
+                >
+                  {notificationCount}
+                </span>
+              )}
+            </button>
+
+            {/* Notifications Dropdown Drawer */}
+            {notificationsOpen && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '120%',
+                  right: 0,
+                  width: '320px',
+                  background: '#FFFFFF',
+                  color: '#031D34',
+                  borderRadius: '10px',
+                  boxShadow: '0 12px 36px rgba(3,29,52,0.3)',
+                  border: '2px solid #0B4769',
+                  zIndex: 1000,
+                  overflow: 'hidden',
+                  animation: 'slideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
+                }}
+              >
+                <div style={{ background: '#031D34', color: '#FFF', padding: '0.75rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 800, fontSize: '0.85rem' }}>
+                    <Bell size={15} style={{ color: '#E9BB76' }} /> Grihasta Live Notifications
+                  </div>
+                  <span className="badge badge-amber" style={{ fontSize: '0.7rem' }}>{notificationCount} New</span>
+                </div>
+
+                <div style={{ maxHeight: '280px', overflowY: 'auto', padding: '0.5rem 0' }}>
+                  {pendingApprovals.map((appr) => (
+                    <div
+                      key={appr.id}
+                      onClick={() => { setActiveModule(8); setNotificationsOpen(false); }}
+                      style={{
+                        padding: '0.65rem 1rem',
+                        borderBottom: '1px solid #F1F5F9',
+                        cursor: 'pointer',
+                        background: '#FEFCE8',
+                        transition: 'background 0.15s ease'
+                      }}
+                    >
+                      <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#854D0E', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                        <UserCheck size={14} /> Pending Access Approval
+                      </div>
+                      <div style={{ fontSize: '0.82rem', color: '#031D34', margin: '0.15rem 0' }}>
+                        <strong>{appr.name}</strong> ({appr.villaNumber}) registered as {appr.occupancyType}.
+                      </div>
+                      <div style={{ fontSize: '0.72rem', color: '#A16207', fontWeight: 600 }}>
+                        Click to Review in Module 08 →
+                      </div>
+                    </div>
+                  ))}
+
+                  <div style={{ padding: '0.65rem 1rem', borderBottom: '1px solid #F1F5F9' }}>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#075985', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                      <AlertCircle size={14} /> Waste Collection Timing
+                    </div>
+                    <div style={{ fontSize: '0.78rem', color: '#475569' }}>
+                      Daily waste collection active between 7:30 AM and 9:00 AM.
+                    </div>
+                  </div>
+
+                  <div style={{ padding: '0.65rem 1rem' }}>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#166534', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                      <CheckCircle2 size={14} /> Security Gate Status
+                    </div>
+                    <div style={{ fontSize: '0.78rem', color: '#475569' }}>
+                      Main Gate & Tank Back Gate entry logs operational.
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ background: '#F8FAFC', padding: '0.5rem 1rem', textAlign: 'center', borderTop: '1px solid #E2E8F0' }}>
+                  <button
+                    onClick={() => setNotificationsOpen(false)}
+                    style={{ background: 'none', border: 'none', color: '#0B4769', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}
+                  >
+                    Mark All Notifications as Read
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
             <span style={{ fontSize: '0.75rem', opacity: 0.8, whiteSpace: 'nowrap' }}>Access Portal:</span>

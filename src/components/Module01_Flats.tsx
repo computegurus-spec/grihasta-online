@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import type { Flat, DomesticHelp, UserRole } from '../types';
 import { StorageEngine } from '../services/storage';
 import { getLaneForVillaNumber, MASTER_LANE_LIST, calculateWaterRequirement, calculateGarbageOutput } from '../utils/laneMapping';
-import { Plus, Search, Filter, Phone, Mail, UserPlus, Camera, User, Droplets, Trash2, Users, Map } from 'lucide-react';
+import { Plus, Search, Filter, Phone, Mail, UserPlus, Camera, Droplets, Trash2, Users, Map } from 'lucide-react';
 
 interface Props {
   role: UserRole;
@@ -454,152 +454,73 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
       {/* MODAL: ADD FLAT */}
       {isFlatModalOpen && (
         <div className="modal-overlay">
-          <div className="modal-content">
+          <div className="modal-content" style={{ maxWidth: '460px' }}>
             <div className="modal-header">
               <h3>Add New Villa / Plot Record</h3>
               <button onClick={() => setIsFlatModalOpen(false)} style={{ color: '#FFF', background: 'none', border: 'none', cursor: 'pointer' }}>X</button>
             </div>
-            <form onSubmit={handleAddFlat} className="modal-body">
-              <div className="grid-2">
-                <div className="form-group">
-                  <label>Plot / Villa Number</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Plot 42 or Villa 105"
-                    className="form-control"
-                    value={newFlat.flatNumber}
-                    onChange={(e) => handleFlatNumberChange(e.target.value)}
-                  />
-                  {newFlat.flatNumber && (
-                    <span style={{ fontSize: '0.75rem', color: '#15803D', fontWeight: 600, display: 'block', marginTop: '0.2rem' }}>
-                      ⚡ Auto-mapped: {newFlat.block}
-                    </span>
-                  )}
-                </div>
-                <div className="form-group">
-                  <label>Assigned Lane (Auto-Selected)</label>
-                  <select
-                    className="form-control"
-                    value={newFlat.block}
-                    onChange={(e) => setNewFlat({ ...newFlat, block: e.target.value })}
-                  >
-                    {lanesList.map(m => (
-                      <option key={m.laneName} value={m.laneName}>{m.laneName} (Plots {m.startPlot}-{m.endPlot})</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label>Owner Name</label>
+            <form onSubmit={handleAddFlat} className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>Full Resident Name *</label>
                 <input
                   type="text"
                   required
-                  placeholder="Full name"
+                  placeholder="e.g. Ramesh Kumar"
                   className="form-control"
+                  style={{ fontSize: '0.85rem' }}
                   value={newFlat.ownerName}
                   onChange={(e) => setNewFlat({ ...newFlat, ownerName: e.target.value })}
                 />
               </div>
 
-              <div className="grid-2">
-                <div className="form-group">
-                  <label>Owner Phone</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="+91 99000 00000"
-                    className="form-control"
-                    value={newFlat.ownerPhone}
-                    onChange={(e) => setNewFlat({ ...newFlat, ownerPhone: e.target.value })}
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Owner Email</label>
-                  <input
-                    type="email"
-                    required
-                    placeholder="owner@example.com"
-                    className="form-control"
-                    value={newFlat.ownerEmail}
-                    onChange={(e) => setNewFlat({ ...newFlat, ownerEmail: e.target.value })}
-                  />
-                </div>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>Mobile Number *</label>
+                <input
+                  type="tel"
+                  required
+                  placeholder="e.g. +91 98765 43210"
+                  className="form-control"
+                  style={{ fontSize: '0.85rem' }}
+                  value={newFlat.ownerPhone}
+                  onChange={(e) => setNewFlat({ ...newFlat, ownerPhone: e.target.value })}
+                />
               </div>
 
-              {/* Adults and Kids Member Breakdown */}
-              <div className="grid-2" style={{ background: '#F8FAFC', padding: '0.75rem', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
-                <div className="form-group">
-                  <label>👨 Adult Members (Count)</label>
-                  <input
-                    type="number"
-                    min="1"
-                    required
-                    className="form-control"
-                    value={newFlat.adultsCount}
-                    onChange={(e) => setNewFlat({ ...newFlat, adultsCount: Number(e.target.value) })}
-                  />
-                </div>
-                <div className="form-group">
-                  <label>👶 Kid Members (Count)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    required
-                    className="form-control"
-                    value={newFlat.kidsCount}
-                    onChange={(e) => setNewFlat({ ...newFlat, kidsCount: Number(e.target.value) })}
-                  />
-                </div>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>Villa / Plot Number *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Villa 306"
+                  className="form-control"
+                  style={{ fontSize: '0.85rem' }}
+                  value={newFlat.flatNumber}
+                  onChange={(e) => handleFlatNumberChange(e.target.value)}
+                />
+                {newFlat.flatNumber && (
+                  <span style={{ fontSize: '0.75rem', color: '#15803D', fontWeight: 600, display: 'block', marginTop: '0.2rem' }}>
+                    ⚡ Auto-mapped: {newFlat.block}
+                  </span>
+                )}
               </div>
 
-              <div className="grid-2">
-                <div className="form-group">
-                  <label>Occupancy Type</label>
-                  <select
-                    className="form-control"
-                    value={newFlat.occupancyType}
-                    onChange={(e) => setNewFlat({ ...newFlat, occupancyType: e.target.value as any })}
-                  >
-                    <option value="Owner Occupied">Owner Occupied</option>
-                    <option value="Rented">Rented</option>
-                    <option value="Vacant">Vacant</option>
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label>Quarterly Dues (₹) — Standard: ₹9,000</label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    value={newFlat.quarterlyDuesRate}
-                    onChange={(e) => setNewFlat({ ...newFlat, quarterlyDuesRate: Number(e.target.value) })}
-                  />
-                </div>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>Occupancy Status *</label>
+                <select
+                  className="form-control"
+                  style={{ fontSize: '0.85rem' }}
+                  value={newFlat.occupancyType}
+                  onChange={(e) => setNewFlat({ ...newFlat, occupancyType: e.target.value as any })}
+                >
+                  <option value="Owner Occupied">Villa Owner (Owner Occupied)</option>
+                  <option value="Rented">Resident Tenant (Rented)</option>
+                </select>
               </div>
 
-              <div className="form-group">
-                <label>Owner Profile Photo (Optional)</label>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  {newFlat.ownerPhoto ? (
-                    <img src={newFlat.ownerPhoto} alt="Owner Preview" style={{ width: '42px', height: '42px', borderRadius: '50%', objectFit: 'cover' }} />
-                  ) : (
-                    <div style={{ width: '42px', height: '42px', borderRadius: '50%', background: '#E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <User size={20} style={{ color: '#64748B' }} />
-                    </div>
-                  )}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="form-control"
-                    onChange={(e) => handlePhotoFileChange(e, (url) => setNewFlat({ ...newFlat, ownerPhoto: url }))}
-                  />
-                </div>
+              <div className="modal-footer" style={{ padding: '0.75rem 0 0', marginTop: '0.5rem' }}>
+                <button type="button" className="btn btn-secondary" onClick={() => setIsFlatModalOpen(false)}>Cancel</button>
+                <button type="submit" className="btn btn-primary" style={{ fontWeight: 800 }}>Save Villa Record</button>
               </div>
-
-              <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }}>
-                Save Plot Record
-              </button>
             </form>
           </div>
         </div>
