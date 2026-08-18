@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import type { Flat, DomesticHelp, UserRole } from '../types';
 import { StorageEngine } from '../services/storage';
 import { getLaneForVillaNumber, MASTER_LANE_LIST, calculateWaterRequirement, calculateGarbageOutput } from '../utils/laneMapping';
-import { Plus, Search, Filter, Phone, Mail, UserPlus, Camera, User, MapPin, Droplets, Trash2, Users, Sparkles, Map } from 'lucide-react';
+import { Plus, Search, Filter, Phone, Mail, UserPlus, Camera, User, Droplets, Trash2, Users, Map } from 'lucide-react';
 
 interface Props {
   role: UserRole;
