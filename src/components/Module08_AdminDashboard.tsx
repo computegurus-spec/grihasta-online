@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StorageEngine } from '../services/storage';
-import { BarChart3, TrendingUp, AlertTriangle, Users } from 'lucide-react';
+import { DbConnector } from '../services/dbConnector';
+import { BarChart3, TrendingUp, AlertTriangle, Users, CheckCircle, XCircle, UserCheck } from 'lucide-react';
 
 export const Module08_AdminDashboard: React.FC = () => {
   const flats = StorageEngine.getFlats();
@@ -8,6 +9,29 @@ export const Module08_AdminDashboard: React.FC = () => {
   const tickets = StorageEngine.getTickets();
   const staff = StorageEngine.getStaff();
   const bookings = StorageEngine.getBookings();
+
+  // Pending Access Requests state
+  const [approvals, setApprovals] = useState(() => {
+    const list = DbConnector.getPendingApprovals();
+    if (list.length === 0) {
+      // Sample seed requests if empty
+      DbConnector.submitMcApprovalRequest({ name: 'Suresh Kumar', mobile: '+91 99000 12345', villaNumber: 'Plot 42', occupancyType: 'Owner', requestedRole: 'RESIDENT_OWNER' });
+      DbConnector.submitMcApprovalRequest({ name: 'Priya Sharma', mobile: '+91 98765 43210', villaNumber: 'Villa 105', occupancyType: 'Tenant', requestedRole: 'RESIDENT_TENANT' });
+      DbConnector.submitMcApprovalRequest({ name: 'Anand Rao (MC Nominee)', mobile: '+91 94440 99887', villaNumber: 'Plot 215', occupancyType: 'Owner', requestedRole: 'MC_MEMBER' });
+      return DbConnector.getPendingApprovals();
+    }
+    return list;
+  });
+
+  const handleApprove = (id: string) => {
+    DbConnector.approveMcUser(id);
+    setApprovals(DbConnector.getPendingApprovals());
+  };
+
+  const handleReject = (id: string) => {
+    DbConnector.rejectMcUser(id);
+    setApprovals(DbConnector.getPendingApprovals());
+  };
 
   const totalCollected = dues.filter(d => d.status === 'Paid').reduce((acc, d) => acc + d.amount, 0);
   const totalPending = dues.filter(d => d.status !== 'Paid').reduce((acc, d) => acc + d.amount, 0);
@@ -18,6 +42,8 @@ export const Module08_AdminDashboard: React.FC = () => {
   const occupiedFlats = flats.filter(f => f.occupancyType !== 'Vacant').length;
   const occupancyPct = Math.round((occupiedFlats / flats.length) * 100) || 0;
 
+  const pendingCount = approvals.filter(a => a.status === 'Pending').length;
+
   const phases = [
     { phase: 'Phase 1: Core Foundation', weeks: 'V1.0 Handover', items: ['Villa plot directory', 'Owner & tenant profiles', 'Vehicle registration', 'Domestic help log'], status: 'Completed', color: '#31532C' },
     { phase: 'Phase 2: Operational Enhancements', weeks: 'Phase 2 Release 🚀', items: ['3-Tier Access Portals', 'Dynamic Lane Mapping', 'Adults/Kids Water & Garbage Metrics', 'Back Gate (Water Tank) Security', 'Car Washing Bay Booking', 'Waste Segregation Guide'], status: 'Ready to Release', color: '#0B4769' },
@@ -27,6 +53,82 @@ export const Module08_AdminDashboard: React.FC = () => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+
+      {/* MC One-Click Access Request Approval Queue */}
+      <div className="card" style={{ background: '#FFF', border: '2px solid #0B4769', boxShadow: '0 10px 30px rgba(11,71,105,0.12)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+          <div>
+            <span className="badge badge-amber" style={{ fontWeight: 800, marginBottom: '0.3rem' }}>APPROVAL QUEUE</span>
+            <h3 style={{ color: '#0B4769', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <UserCheck size={22} style={{ color: '#E9BB76' }} /> ⚡ Pending Resident & MC Access Requests
+            </h3>
+          </div>
+          <span className="badge badge-ocean" style={{ fontSize: '0.85rem', fontWeight: 800 }}>
+            {pendingCount} Pending Approvals
+          </span>
+        </div>
+
+        <div className="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Applicant Name</th>
+                <th>Mobile</th>
+                <th>Villa / Plot</th>
+                <th>Occupancy & Requested Role</th>
+                <th>Submitted</th>
+                <th>Status</th>
+                <th>MC Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {approvals.map((a) => (
+                <tr key={a.id}>
+                  <td><strong>{a.name}</strong></td>
+                  <td><span style={{ fontSize: '0.8rem', color: '#475569' }}>{a.mobile}</span></td>
+                  <td><span className="badge badge-amber">{a.villaNumber}</span></td>
+                  <td>
+                    <div style={{ fontSize: '0.8rem' }}>
+                      <strong>{a.occupancyType}</strong> ({a.requestedRole})
+                    </div>
+                  </td>
+                  <td><span style={{ fontSize: '0.78rem', color: '#64748B' }}>{a.submittedAt}</span></td>
+                  <td>
+                    <span className={`badge ${a.status === 'Approved' ? 'badge-paid' : a.status === 'Rejected' ? 'badge-overdue' : 'badge-pending'}`}>
+                      {a.status}
+                    </span>
+                  </td>
+                  <td>
+                    {a.status === 'Pending' ? (
+                      <div style={{ display: 'flex', gap: '0.4rem' }}>
+                        <button
+                          onClick={() => handleApprove(a.id)}
+                          className="btn btn-sm btn-primary"
+                          style={{ padding: '0.2rem 0.6rem', fontSize: '0.75rem', background: '#16A34A', border: 'none' }}
+                        >
+                          <CheckCircle size={13} /> Approve
+                        </button>
+                        <button
+                          onClick={() => handleReject(a.id)}
+                          className="btn btn-sm btn-secondary"
+                          style={{ padding: '0.2rem 0.6rem', fontSize: '0.75rem', background: '#991B1B', color: '#FFF', border: 'none' }}
+                        >
+                          <XCircle size={13} /> Reject
+                        </button>
+                      </div>
+                    ) : (
+                      <span style={{ fontSize: '0.75rem', color: '#64748B', fontStyle: 'italic' }}>
+                        {a.status === 'Approved' ? '✅ Verified & Granted' : '❌ Access Declined'}
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       {/* Phase 2 Release Readiness Control Banner */}
       <div style={{ background: 'linear-gradient(135deg, #0B4769 0%, #031D34 100%)', color: '#FFF', padding: '1.25rem 1.5rem', borderRadius: '12px', border: '2px solid #E9BB76', boxShadow: '0 8px 24px rgba(3,29,52,0.3)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
         <div>

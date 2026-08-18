@@ -3,6 +3,7 @@ import type { UserRole } from './types';
 import { Navbar } from './components/Navbar';
 import { ManualModal } from './components/ManualModal';
 import { LandingPage } from './components/LandingPage';
+import { AccessRequestModal } from './components/AccessRequestModal';
 
 // Module Components
 import { Module01_Flats } from './components/Module01_Flats';
@@ -22,6 +23,7 @@ export function App() {
   const [activeRole, setActiveRole] = useState<UserRole>('MC_ADMIN');
   const [activeModule, setActiveModule] = useState<number>(1);
   const [isManualOpen, setIsManualOpen] = useState<boolean>(false);
+  const [isAccessRequestOpen, setIsAccessRequestOpen] = useState<boolean>(false);
 
   // Show landing page first
   if (showLanding) {
@@ -42,6 +44,7 @@ export function App() {
         setActiveModule={setActiveModule}
         onOpenManual={() => setIsManualOpen(true)}
         onGoHome={() => setShowLanding(true)}
+        onOpenRequestAccess={() => setIsAccessRequestOpen(true)}
       />
 
       {/* Main Container */}
@@ -118,8 +121,9 @@ export function App() {
         </div>
       </footer>
 
-      {/* Resident Manual Modal */}
+      {/* Resident Manual Modal & Access Request Modal */}
       <ManualModal isOpen={isManualOpen} onClose={() => setIsManualOpen(false)} role={activeRole} />
+      <AccessRequestModal isOpen={isAccessRequestOpen} onClose={() => setIsAccessRequestOpen(false)} />
     </div>
   );
 }
