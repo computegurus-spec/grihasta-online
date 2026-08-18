@@ -179,6 +179,41 @@ export const Module08_AdminDashboard: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* MC Member Manual Approval & Database Setup Box */}
+      <div className="card" style={{ background: '#F8FAFC', border: '2px dashed #0B4769' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
+          <div>
+            <span className="badge badge-ocean" style={{ marginBottom: '0.3rem' }}>SECURITY & CLOUD DB INTEGRATION</span>
+            <h3 style={{ color: '#0B4769', margin: 0 }}>👑 MC Manual Approval & Database Connector</h3>
+          </div>
+          <span className="badge badge-amber" style={{ fontWeight: 800 }}>STRICT ROLE ENFORCEMENT ACTIVE</span>
+        </div>
+
+        <div className="grid-2" style={{ gap: '1rem', fontSize: '0.85rem' }}>
+          {/* Rule Enforcement Note */}
+          <div style={{ background: '#FFF', padding: '1rem', borderRadius: '8px', border: '1px solid #CBD5E1' }}>
+            <h4 style={{ color: '#031D34', marginBottom: '0.5rem' }}>🔒 Strict Resident vs MC Role Controls:</h4>
+            <ul style={{ paddingLeft: '1.25rem', color: '#475569', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+              <li><strong>Tenants:</strong> Automatically verified & restricted to Tenant Resident Portal.</li>
+              <li><strong>Owners:</strong> Automatically verified & restricted to Owner Resident Portal.</li>
+              <li><strong>MC Members:</strong> Cannot be self-assigned. Must be manually added/approved by MC Super Admin.</li>
+            </ul>
+          </div>
+
+          {/* Database Setup Status */}
+          <div style={{ background: '#FFF', padding: '1rem', borderRadius: '8px', border: '1px solid #CBD5E1' }}>
+            <h4 style={{ color: '#0B4769', marginBottom: '0.5rem' }}>🗄️ Database Connection Readiness (Supabase / Firebase):</h4>
+            <p style={{ color: '#475569', fontSize: '0.82rem', marginBottom: '0.5rem' }}>
+              To sync all 400 villas live across mobile devices, connect your free Supabase or Firebase PostgreSQL database credentials below:
+            </p>
+            <div style={{ background: '#031D34', color: '#E9BB76', padding: '0.5rem 0.75rem', borderRadius: '6px', fontFamily: 'monospace', fontSize: '0.75rem' }}>
+              VITE_SUPABASE_URL = "https://grihasta.supabase.co"<br />
+              VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6..."
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
