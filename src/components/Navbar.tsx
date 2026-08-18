@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import type { UserRole } from '../types';
-import { Shield, Home, Building2, Wallet, Wrench, Calendar, Bell, Users, BarChart3, BookOpen, HeartHandshake, Menu, X, ChevronRight } from 'lucide-react';
+import { Shield, Home, Building2, Wallet, Wrench, Calendar, Bell, Users, BarChart3, BookOpen, Globe, Lock, ChevronRight, Menu, X, HeartHandshake } from 'lucide-react';
 
 interface NavbarProps {
   activeRole: UserRole;
@@ -8,6 +8,7 @@ interface NavbarProps {
   activeModule: number;
   setActiveModule: (moduleIndex: number) => void;
   onOpenManual: () => void;
+  onGoHome: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -15,18 +16,34 @@ export const Navbar: React.FC<NavbarProps> = ({
   setActiveRole,
   activeModule,
   setActiveModule,
-  onOpenManual
+  onOpenManual,
+  onGoHome
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const rolesList: { role: UserRole; label: string }[] = [
-    { role: 'MC_ADMIN', label: 'MC Administrator (Full Admin)' },
-    { role: 'MC_MEMBER', label: 'MC Member (Elevated)' },
-    { role: 'RESIDENT_OWNER', label: 'Resident (Owner)' },
-    { role: 'RESIDENT_TENANT', label: 'Resident (Tenant)' },
-    { role: 'SECURITY_GUARD', label: 'Security Guard (Gate Access)' },
-    { role: 'MAINTENANCE_STAFF', label: 'Maintenance Staff' },
+  const roleGroups = [
+    {
+      groupLabel: '👑 Management & Committee',
+      roles: [
+        { role: 'MC_ADMIN' as UserRole, label: 'MC Administrator (Full Admin)' },
+        { role: 'MC_MEMBER' as UserRole, label: 'MC Member (Elevated View)' },
+      ]
+    },
+    {
+      groupLabel: '🏡 Resident Portal',
+      roles: [
+        { role: 'RESIDENT_OWNER' as UserRole, label: 'Resident (Villa Owner)' },
+        { role: 'RESIDENT_TENANT' as UserRole, label: 'Resident (Tenant)' },
+      ]
+    },
+    {
+      groupLabel: '🛡️ Operations & Staff',
+      roles: [
+        { role: 'SECURITY_GUARD' as UserRole, label: 'Security Guard (Gate Access)' },
+        { role: 'MAINTENANCE_STAFF' as UserRole, label: 'Maintenance Staff' },
+      ]
+    }
   ];
 
   const modules = [
@@ -43,7 +60,6 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const activeModuleData = modules.find(m => m.id === activeModule);
 
-  // Close on outside click
   useEffect(() => {
     const handleOutside = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
@@ -61,11 +77,8 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <header style={{ position: 'sticky', top: 0, zIndex: 100 }}>
-      {/* Top Bar */}
       <div className="role-bar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        {/* Left: Logo + Hamburger */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          {/* Hamburger button */}
           <div ref={menuRef} style={{ position: 'relative' }}>
             <button
               id="hamburger-menu-btn"
@@ -89,7 +102,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               {menuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
 
-            {/* Slide-down Menu Drawer */}
             {menuOpen && (
               <div
                 id="sandwich-menu-drawer"
@@ -97,7 +109,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   position: 'absolute',
                   top: 'calc(100% + 8px)',
                   left: 0,
-                  width: '280px',
+                  width: '290px',
                   background: '#031D34',
                   borderRadius: '12px',
                   border: '1px solid rgba(255,255,255,0.1)',
@@ -107,9 +119,33 @@ export const Navbar: React.FC<NavbarProps> = ({
                   zIndex: 200
                 }}
               >
-                {/* Drawer Header */}
+                <button
+                  onClick={() => {
+                    setMenuOpen(false);
+                    onGoHome();
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '0.85rem 1.15rem',
+                    borderBottom: '1px solid rgba(233,187,118,0.3)',
+                    background: 'linear-gradient(135deg, rgba(233,187,118,0.2), rgba(11,71,105,0.4))',
+                    color: '#E9BB76',
+                    border: 'none',
+                    fontWeight: 800,
+                    fontSize: '0.85rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.6rem',
+                    textAlign: 'left'
+                  }}
+                >
+                  <Globe size={18} />
+                  <span>🌐 Return to Landing Home Page</span>
+                </button>
+
                 <div style={{
-                  padding: '0.85rem 1.15rem',
+                  padding: '0.75rem 1.15rem',
                   borderBottom: '1px solid rgba(255,255,255,0.08)',
                   display: 'flex',
                   alignItems: 'center',
@@ -118,12 +154,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }}>
                   <Building2 size={16} style={{ color: '#E9BB76' }} />
                   <span style={{ fontSize: '0.8rem', color: '#D2E0B0', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase' }}>
-                    Module Navigation
+                    Layout Portal Modules
                   </span>
                 </div>
 
-                {/* Module List */}
-                <div style={{ padding: '0.5rem 0' }}>
+                <div style={{ padding: '0.5rem 0', maxHeight: '60vh', overflowY: 'auto' }}>
                   {modules.map((m) => {
                     const Icon = m.icon;
                     const isActive = activeModule === m.id;
@@ -140,52 +175,36 @@ export const Navbar: React.FC<NavbarProps> = ({
                           display: 'flex',
                           alignItems: 'center',
                           gap: '0.75rem',
-                          padding: '0.7rem 1.1rem',
-                          background: isActive ? 'rgba(30, 107, 133, 0.35)' : 'transparent',
+                          padding: '0.65rem 1.15rem',
+                          background: isActive ? 'rgba(233,187,118,0.15)' : 'transparent',
+                          color: isActive ? '#E9BB76' : isAuthorized ? '#FFFFFF' : 'rgba(255,255,255,0.35)',
                           border: 'none',
                           borderLeft: isActive ? '3px solid #E9BB76' : '3px solid transparent',
                           cursor: isAuthorized ? 'pointer' : 'not-allowed',
-                          opacity: isAuthorized ? 1 : 0.35,
-                          transition: 'all 0.15s ease',
                           textAlign: 'left',
-                          color: isActive ? '#FFFFFF' : 'rgba(255,255,255,0.8)',
-                        }}
-                        onMouseEnter={e => {
-                          if (isAuthorized && !isActive) {
-                            (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.05)';
-                          }
-                        }}
-                        onMouseLeave={e => {
-                          if (!isActive) {
-                            (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
-                          }
+                          transition: 'all 0.15s ease'
                         }}
                       >
-                        {/* Badge */}
                         <span style={{
-                          background: isActive ? '#E9BB76' : 'rgba(255,255,255,0.12)',
-                          color: isActive ? '#031D34' : 'rgba(255,255,255,0.7)',
-                          fontSize: '0.65rem',
+                          fontSize: '0.7rem',
                           fontWeight: 800,
-                          padding: '0.15rem 0.4rem',
-                          borderRadius: '4px',
-                          letterSpacing: '0.5px',
-                          minWidth: '32px',
-                          textAlign: 'center',
-                          flexShrink: 0
+                          color: isActive ? '#E9BB76' : 'rgba(255,255,255,0.4)',
+                          width: '20px'
                         }}>
-                          M{m.num}
+                          {m.num}
                         </span>
 
-                        {/* Icon */}
                         <Icon size={16} style={{ color: isActive ? '#E9BB76' : 'rgba(255,255,255,0.65)', flexShrink: 0 }} />
 
-                        {/* Name */}
                         <span style={{ fontSize: '0.875rem', fontWeight: isActive ? 700 : 400, flex: 1 }}>
                           {m.name}
                         </span>
 
-                        {isActive && <ChevronRight size={14} style={{ color: '#E9BB76', flexShrink: 0 }} />}
+                        {isActive ? (
+                          <ChevronRight size={14} style={{ color: '#E9BB76', flexShrink: 0 }} />
+                        ) : !isAuthorized ? (
+                          <Lock size={12} style={{ color: 'rgba(255,255,255,0.25)', flexShrink: 0 }} />
+                        ) : null}
                       </button>
                     );
                   })}
@@ -194,16 +213,18 @@ export const Navbar: React.FC<NavbarProps> = ({
             )}
           </div>
 
-          {/* Logo */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+          <div
+            onClick={onGoHome}
+            title="Click to return to Grihasta Home Page"
+            style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer' }}
+          >
             <Building2 size={22} style={{ color: '#E9BB76' }} />
-            <span style={{ fontWeight: 800, fontSize: '1.1rem', letterSpacing: '0.5px' }}>
+            <span style={{ fontWeight: 800, fontSize: '1.1rem', letterSpacing: '0.5px', color: '#FFF' }}>
               grihasta<span style={{ color: '#E9BB76' }}>.online</span>
             </span>
             <span className="badge badge-amber" style={{ fontSize: '0.7rem' }}>Grihasta Layout</span>
           </div>
 
-          {/* Active Module Breadcrumb Pill */}
           {activeModuleData && (
             <div style={{
               display: 'flex',
@@ -222,30 +243,42 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
         </div>
 
-        {/* Right: Manual button + Role switcher */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <button onClick={onOpenManual} className="btn btn-sm btn-outline" style={{ borderColor: '#E9BB76', color: '#E9BB76' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+          <button
+            onClick={onGoHome}
+            className="btn btn-sm btn-amber"
+            style={{ fontWeight: 800, fontSize: '0.78rem' }}
+            title="Return to Public Landing Page"
+          >
+            <Globe size={14} /> Home Page
+          </button>
+
+          <button onClick={onOpenManual} className="btn btn-sm btn-outline" style={{ borderColor: '#E9BB76', color: '#E9BB76', fontSize: '0.78rem' }}>
             <BookOpen size={14} /> Manual
           </button>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={{ fontSize: '0.75rem', opacity: 0.8, whiteSpace: 'nowrap' }}>Role:</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <span style={{ fontSize: '0.75rem', opacity: 0.8, whiteSpace: 'nowrap' }}>Access Portal:</span>
             <select
               value={activeRole}
               onChange={(e) => setActiveRole(e.target.value as UserRole)}
               className="role-bar-select"
+              style={{ paddingRight: '1rem', background: '#0B4769', color: '#FFF', fontWeight: 700 }}
             >
-              {rolesList.map((r) => (
-                <option key={r.role} value={r.role}>
-                  {r.label}
-                </option>
+              {roleGroups.map((group) => (
+                <optgroup key={group.groupLabel} label={group.groupLabel}>
+                  {group.roles.map((r) => (
+                    <option key={r.role} value={r.role}>
+                      {r.label}
+                    </option>
+                  ))}
+                </optgroup>
               ))}
             </select>
           </div>
         </div>
       </div>
 
-      {/* Inline animation style */}
       <style>{`
         @keyframes slideDown {
           from { opacity: 0; transform: translateY(-8px); }

@@ -41,6 +41,7 @@ export function App() {
         activeModule={activeModule}
         setActiveModule={setActiveModule}
         onOpenManual={() => setIsManualOpen(true)}
+        onGoHome={() => setShowLanding(true)}
       />
 
       {/* Main Container */}
