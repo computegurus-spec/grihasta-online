@@ -15,7 +15,7 @@ import { Module07_Staff } from './components/Module07_Staff';
 import { Module08_AdminDashboard } from './components/Module08_AdminDashboard';
 import { Module09_CommunitySocial } from './components/Module09_CommunitySocial';
 
-import { TreePine, BookOpen, ExternalLink } from 'lucide-react';
+import { TreePine, BookOpen } from 'lucide-react';
 
 export function App() {
   const [showLanding, setShowLanding] = useState<boolean>(true);
@@ -80,14 +80,6 @@ export function App() {
               >
                 ← Back to Home Page
               </button>
-              <a
-                href="https://sites.google.com/view/grihastamanual/home"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ color: '#E9BB76', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.25rem', textDecoration: 'none' }}
-              >
-                sites.google.com/view/grihastamanual <ExternalLink size={12} />
-              </a>
             </div>
           </div>
         </div>
@@ -127,7 +119,7 @@ export function App() {
       </footer>
 
       {/* Resident Manual Modal */}
-      <ManualModal isOpen={isManualOpen} onClose={() => setIsManualOpen(false)} />
+      <ManualModal isOpen={isManualOpen} onClose={() => setIsManualOpen(false)} role={activeRole} />
     </div>
   );
 }

@@ -1,17 +1,76 @@
-import React, { useState } from 'react';
-import { X, ExternalLink, BookOpen, ShieldCheck, HeartHandshake, PhoneCall, Info, Trash2, Recycle, AlertTriangle, MessageSquarePlus } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import type { UserRole } from '../types';
+import { X, ExternalLink, BookOpen, ShieldCheck, HeartHandshake, PhoneCall, Trash2, Recycle, AlertTriangle, Plus, Check } from 'lucide-react';
 
 interface ManualModalProps {
   isOpen: boolean;
   onClose: () => void;
+  role?: UserRole;
 }
 
-export const ManualModal: React.FC<ManualModalProps> = ({ isOpen, onClose }) => {
+interface GuidelineItem {
+  id: string;
+  title: string;
+  detail: string;
+  type: 'danger' | 'info' | 'standard';
+}
+
+const DEFAULT_GUIDELINES: GuidelineItem[] = [
+  { id: 'g-1', title: '🔇 Quiet Hours', detail: '10:00 PM to 06:00 AM daily (No loud music or construction noise).', type: 'standard' },
+  { id: 'g-2', title: '🐕 Pet Policy', detail: 'Leash pets inside common area gardens and cleanup after your pets.', type: 'standard' },
+  { id: 'g-3', title: '💳 Maintenance Dues', detail: 'Payable quarterly via grihasta.online portal.', type: 'standard' }
+];
+
+export const ManualModal: React.FC<ManualModalProps> = ({ isOpen, onClose, role = 'RESIDENT_OWNER' }) => {
   const [showWasteGuide, setShowWasteGuide] = useState(false);
-  const [mcTimeStart, setMcTimeStart] = useState('7:30 AM');
-  const [mcTimeEnd, setMcTimeEnd] = useState('9:00 AM');
+  const [mcTimeStart, setMcTimeStart] = useState(() => localStorage.getItem('grihasta_waste_start') || '7:30 AM');
+  const [mcTimeEnd, setMcTimeEnd] = useState(() => localStorage.getItem('grihasta_waste_end') || '9:00 AM');
+
+  // Custom Guidelines State
+  const [guidelines, setGuidelines] = useState<GuidelineItem[]>(() => {
+    try {
+      const saved = localStorage.getItem('grihasta_guidelines_v1');
+      return saved ? JSON.parse(saved) : DEFAULT_GUIDELINES;
+    } catch (e) {
+      return DEFAULT_GUIDELINES;
+    }
+  });
+
+  const [isAddingRule, setIsAddingRule] = useState(false);
+  const [newRuleTitle, setNewRuleTitle] = useState('');
+  const [newRuleDetail, setNewRuleDetail] = useState('');
+
+  const isMcUser = role === 'MC_ADMIN' || role === 'MC_MEMBER';
+
+  useEffect(() => {
+    localStorage.setItem('grihasta_waste_start', mcTimeStart);
+    localStorage.setItem('grihasta_waste_end', mcTimeEnd);
+  }, [mcTimeStart, mcTimeEnd]);
+
+  useEffect(() => {
+    localStorage.setItem('grihasta_guidelines_v1', JSON.stringify(guidelines));
+  }, [guidelines]);
 
   if (!isOpen) return null;
+
+  const handleAddGuideline = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newRuleTitle || !newRuleDetail) return;
+    const newItem: GuidelineItem = {
+      id: `g-${Date.now()}`,
+      title: newRuleTitle,
+      detail: newRuleDetail,
+      type: 'standard'
+    };
+    setGuidelines([...guidelines, newItem]);
+    setNewRuleTitle('');
+    setNewRuleDetail('');
+    setIsAddingRule(false);
+  };
+
+  const handleDeleteGuideline = (id: string) => {
+    setGuidelines(guidelines.filter(g => g.id !== id));
+  };
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -36,12 +95,58 @@ export const ManualModal: React.FC<ManualModalProps> = ({ isOpen, onClose }) => 
             </p>
           </div>
 
-          {/* Key Guidelines */}
+          {/* Key Guidelines Header with MC Controls */}
           <div>
-            <h4 style={{ color: '#0B4769', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <ShieldCheck size={18} /> Key Layout Guidelines & Rules
-            </h4>
-            
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <h4 style={{ color: '#0B4769', margin: 0, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <ShieldCheck size={18} /> Key Layout Guidelines & Rules
+              </h4>
+              {isMcUser && (
+                <button
+                  type="button"
+                  onClick={() => setIsAddingRule(!isAddingRule)}
+                  className="btn btn-sm btn-primary"
+                  style={{ fontSize: '0.78rem' }}
+                >
+                  <Plus size={14} /> {isAddingRule ? 'Cancel Form' : 'Add New Guideline Rule'}
+                </button>
+              )}
+            </div>
+
+            {/* MC Add Guideline Form */}
+            {isMcUser && isAddingRule && (
+              <form onSubmit={handleAddGuideline} style={{ background: '#F0F9FF', border: '1.5px solid #0B4769', padding: '0.85rem', borderRadius: '8px', marginBottom: '0.85rem', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                <h5 style={{ color: '#0B4769', margin: 0, fontSize: '0.85rem' }}>➕ MC Rule Generator (Add New Guideline)</h5>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label style={{ fontSize: '0.78rem', color: '#031D34' }}>Rule Header / Title (with Emoji)</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. 🏊 Pool Etiquette / 🛝 Children Playground"
+                    className="form-control"
+                    style={{ fontSize: '0.82rem', padding: '0.35rem 0.6rem' }}
+                    value={newRuleTitle}
+                    onChange={(e) => setNewRuleTitle(e.target.value)}
+                  />
+                </div>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label style={{ fontSize: '0.78rem', color: '#031D34' }}>Rule Detail & Description</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Describe the layout rule clearly..."
+                    className="form-control"
+                    style={{ fontSize: '0.82rem', padding: '0.35rem 0.6rem' }}
+                    value={newRuleDetail}
+                    onChange={(e) => setNewRuleDetail(e.target.value)}
+                  />
+                </div>
+                <button type="submit" className="btn btn-sm btn-primary" style={{ marginTop: '0.2rem' }}>
+                  <Check size={14} /> Publish Guideline to Manual
+                </button>
+              </form>
+            )}
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', fontSize: '0.875rem' }}>
               {/* Vehicle Parking */}
               <div style={{ background: '#FFF5F5', borderLeft: '4px solid #E53E3E', padding: '0.75rem 1rem', borderRadius: '4px' }}>
@@ -64,25 +169,30 @@ export const ManualModal: React.FC<ManualModalProps> = ({ isOpen, onClose }) => 
                     {showWasteGuide ? 'Hide Waste Guide ▲' : 'View Segregation List & Govt Site ▼'}
                   </button>
                 </div>
+
                 <p style={{ color: '#2D3748', marginTop: '0.25rem', fontSize: '0.85rem' }}>
                   Segregate dry and wet waste at source. Collection timing: <strong>between {mcTimeStart} and {mcTimeEnd} daily</strong>.
                 </p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.4rem', fontSize: '0.75rem', color: '#64748B' }}>
-                  <span>Adjust Collection Slot Display:</span>
-                  <input
-                    type="text"
-                    value={mcTimeStart}
-                    onChange={(e) => setMcTimeStart(e.target.value)}
-                    style={{ width: '70px', padding: '0.1rem 0.3rem', fontSize: '0.75rem' }}
-                  />
-                  <span>to</span>
-                  <input
-                    type="text"
-                    value={mcTimeEnd}
-                    onChange={(e) => setMcTimeEnd(e.target.value)}
-                    style={{ width: '70px', padding: '0.1rem 0.3rem', fontSize: '0.75rem' }}
-                  />
-                </div>
+
+                {/* MC Only Time Range Editor */}
+                {isMcUser && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.4rem', padding: '0.35rem 0.6rem', background: '#DCFCE7', borderRadius: '6px', fontSize: '0.75rem', color: '#166534', border: '1px solid #86EFAC' }}>
+                    <strong>👑 MC Team Timing Controls:</strong>
+                    <input
+                      type="text"
+                      value={mcTimeStart}
+                      onChange={(e) => setMcTimeStart(e.target.value)}
+                      style={{ width: '70px', padding: '0.1rem 0.3rem', fontSize: '0.75rem', border: '1px solid #16A34A', borderRadius: '4px' }}
+                    />
+                    <span>to</span>
+                    <input
+                      type="text"
+                      value={mcTimeEnd}
+                      onChange={(e) => setMcTimeEnd(e.target.value)}
+                      style={{ width: '70px', padding: '0.1rem 0.3rem', fontSize: '0.75rem', border: '1px solid #16A34A', borderRadius: '4px' }}
+                    />
+                  </div>
+                )}
 
                 {/* Collapsible Waste Segregation Guide */}
                 {showWasteGuide && (
@@ -136,27 +246,23 @@ export const ManualModal: React.FC<ManualModalProps> = ({ isOpen, onClose }) => 
                 )}
               </div>
 
-              {/* Other Standard Rules */}
-              <div style={{ background: '#F8FAFC', padding: '0.65rem 1rem', borderRadius: '4px', border: '1px solid #E2E8F0' }}>
-                <strong>🔇 Quiet Hours:</strong> 10:00 PM to 06:00 AM daily (No loud music or construction noise).
-              </div>
-              <div style={{ background: '#F8FAFC', padding: '0.65rem 1rem', borderRadius: '4px', border: '1px solid #E2E8F0' }}>
-                <strong>🐕 Pet Policy:</strong> Leash pets inside common area gardens and cleanup after your pets.
-              </div>
-              <div style={{ background: '#F8FAFC', padding: '0.65rem 1rem', borderRadius: '4px', border: '1px solid #E2E8F0' }}>
-                <strong>💳 Maintenance Dues:</strong> Payable quarterly via grihasta.online portal.
-              </div>
-            </div>
-          </div>
-
-          {/* MC Members Guideline Discussion Note Callout */}
-          <div style={{ background: '#FEF3C7', padding: '0.85rem 1rem', borderRadius: '8px', border: '1px solid #F59E0B', display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
-            <MessageSquarePlus size={20} style={{ color: '#D97706', flexShrink: 0, marginTop: '2px' }} />
-            <div>
-              <h5 style={{ color: '#92400E', margin: 0, fontSize: '0.88rem' }}>MC Member Guidelines Discussion Note</h5>
-              <p style={{ fontSize: '0.82rem', color: '#78350F', marginTop: '0.2rem' }}>
-                We can add more items to this post after discussing with other MC members during monthly meetings. If you have rule suggestions or policy queries, submit them to the MC helpdesk.
-              </p>
+              {/* Dynamic Guidelines List */}
+              {guidelines.map((g) => (
+                <div key={g.id} style={{ background: '#F8FAFC', padding: '0.65rem 1rem', borderRadius: '4px', border: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <strong>{g.title}:</strong> {g.detail}
+                  </div>
+                  {isMcUser && (
+                    <button
+                      onClick={() => handleDeleteGuideline(g.id)}
+                      title="Remove Guideline (MC Admin)"
+                      style={{ background: 'none', border: 'none', color: '#991B1B', cursor: 'pointer', padding: '0.2rem', marginLeft: '0.5rem' }}
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
 
@@ -176,23 +282,10 @@ export const ManualModal: React.FC<ManualModalProps> = ({ isOpen, onClose }) => 
               </div>
             </div>
           </div>
-
-          <div style={{ borderTop: '1px solid #E2E8F0', paddingTop: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.8rem', color: '#64748B', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-              <Info size={14} /> Official Google Site Reference
-            </span>
-            <a
-              href="https://sites.google.com/view/grihastamanual/home"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn btn-sm btn-secondary"
-            >
-              Visit Online Site Manual <ExternalLink size={14} />
-            </a>
-          </div>
         </div>
       </div>
     </div>
   );
 };
+
 
