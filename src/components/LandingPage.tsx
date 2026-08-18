@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Shield, Home, Wallet, Wrench, Calendar, Bell, Users, BarChart3, HeartHandshake,
   ArrowRight, Building2, TreePine, CheckCircle, Phone, Mail, MapPin, ChevronDown,
-  Leaf, Star, Sun, Expand
+  Leaf, Star, Sun, Expand, Menu, X
 } from 'lucide-react';
 
 interface LandingPageProps {
@@ -11,6 +11,7 @@ interface LandingPageProps {
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onEnterPortal }) => {
   const [scrolled, setScrolled] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 60);
@@ -71,31 +72,32 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterPortal }) => {
       {/* ─── STICKY NAV ─── */}
       <nav style={{
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
-        background: scrolled ? 'rgba(3,29,52,0.97)' : 'transparent',
-        backdropFilter: scrolled ? 'blur(12px)' : 'none',
-        borderBottom: scrolled ? '1px solid rgba(233,187,118,0.2)' : 'none',
+        background: scrolled || mobileNavOpen ? 'rgba(3,29,52,0.98)' : 'rgba(3,29,52,0.85)',
+        backdropFilter: 'blur(12px)',
+        borderBottom: '1px solid rgba(233,187,118,0.2)',
         transition: 'all 0.3s ease',
-        padding: '0.85rem 2rem',
+        padding: '0.75rem 1.25rem',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <Building2 size={22} style={{ color: '#E9BB76' }} />
           <span style={{ fontWeight: 800, fontSize: '1.1rem', color: '#FFF', letterSpacing: '0.5px' }}>
             Grihasta
           </span>
           <span style={{
             background: 'rgba(233,187,118,0.18)', border: '1px solid rgba(233,187,118,0.35)',
-            color: '#E9BB76', fontSize: '0.65rem', fontWeight: 700,
-            padding: '0.15rem 0.5rem', borderRadius: '4px', letterSpacing: '0.5px'
+            color: '#E9BB76', fontSize: '0.62rem', fontWeight: 700,
+            padding: '0.15rem 0.4rem', borderRadius: '4px', letterSpacing: '0.5px'
           }}>MALUR · KOLAR</span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-          <a href="#about" style={{ color: 'rgba(255,255,255,0.75)', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 500 }}>About</a>
-          <a href="#villas" style={{ color: 'rgba(255,255,255,0.75)', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 500 }}>Villas</a>
-          <a href="#amenities" style={{ color: 'rgba(255,255,255,0.75)', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 500 }}>Amenities</a>
-          <a href="#portal" style={{ color: 'rgba(255,255,255,0.75)', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 500 }}>Portal</a>
-          <a href="#contact" style={{ color: 'rgba(255,255,255,0.75)', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 500 }}>Contact</a>
+        {/* Desktop Nav Links */}
+        <div className="desktop-landing-nav" style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+          <a href="#about" style={{ color: 'rgba(255,255,255,0.85)', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 500 }}>About</a>
+          <a href="#villas" style={{ color: 'rgba(255,255,255,0.85)', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 500 }}>Villas</a>
+          <a href="#amenities" style={{ color: 'rgba(255,255,255,0.85)', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 500 }}>Amenities</a>
+          <a href="#portal" style={{ color: 'rgba(255,255,255,0.85)', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 500 }}>Portal</a>
+          <a href="#contact" style={{ color: 'rgba(255,255,255,0.85)', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 500 }}>Contact</a>
           <button
             id="landing-resident-login-btn"
             onClick={onEnterPortal}
@@ -104,13 +106,57 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterPortal }) => {
               padding: '0.5rem 1.1rem', fontWeight: 800, fontSize: '0.85rem', cursor: 'pointer',
               display: 'flex', alignItems: 'center', gap: '0.4rem', transition: 'all 0.2s ease'
             }}
-            onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-1px)')}
-            onMouseLeave={e => (e.currentTarget.style.transform = 'translateY(0)')}
           >
             Resident Login <ArrowRight size={14} />
           </button>
         </div>
+
+        {/* Mobile Hamburger Toggle Button */}
+        <button
+          onClick={() => setMobileNavOpen(!mobileNavOpen)}
+          className="mobile-landing-toggle"
+          style={{
+            background: 'none', border: '1px solid rgba(255,255,255,0.2)', color: '#FFF',
+            padding: '0.4rem', borderRadius: '6px', cursor: 'pointer', display: 'none'
+          }}
+          aria-label="Toggle mobile menu"
+        >
+          {mobileNavOpen ? <X size={22} /> : <Menu size={22} />}
+        </button>
+
+        {/* Mobile Slide-down Menu Drawer */}
+        {mobileNavOpen && (
+          <div style={{
+            position: 'absolute', top: '100%', left: 0, right: 0,
+            background: '#031D34', borderBottom: '2px solid #E9BB76',
+            padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem',
+            boxShadow: '0 12px 30px rgba(0,0,0,0.5)'
+          }}>
+            <a href="#about" onClick={() => setMobileNavOpen(false)} style={{ color: '#FFF', textDecoration: 'none', fontWeight: 600, fontSize: '0.95rem' }}>About Grihasta</a>
+            <a href="#villas" onClick={() => setMobileNavOpen(false)} style={{ color: '#FFF', textDecoration: 'none', fontWeight: 600, fontSize: '0.95rem' }}>Villa Types</a>
+            <a href="#amenities" onClick={() => setMobileNavOpen(false)} style={{ color: '#FFF', textDecoration: 'none', fontWeight: 600, fontSize: '0.95rem' }}>Layout Amenities</a>
+            <a href="#portal" onClick={() => setMobileNavOpen(false)} style={{ color: '#FFF', textDecoration: 'none', fontWeight: 600, fontSize: '0.95rem' }}>Portal Modules</a>
+            <a href="#contact" onClick={() => setMobileNavOpen(false)} style={{ color: '#FFF', textDecoration: 'none', fontWeight: 600, fontSize: '0.95rem' }}>Contact MC Office</a>
+            <button
+              onClick={() => { setMobileNavOpen(false); onEnterPortal(); }}
+              style={{
+                background: '#E9BB76', color: '#031D34', border: 'none', borderRadius: '8px',
+                padding: '0.75rem', fontWeight: 800, fontSize: '0.95rem', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', width: '100%'
+              }}
+            >
+              Resident Portal Login <ArrowRight size={16} />
+            </button>
+          </div>
+        )}
       </nav>
+
+      <style>{`
+        @media (max-width: 768px) {
+          .desktop-landing-nav { display: none !important; }
+          .mobile-landing-toggle { display: flex !important; }
+        }
+      `}</style>
 
       {/* ─── HERO SECTION ─── */}
       <section style={{
