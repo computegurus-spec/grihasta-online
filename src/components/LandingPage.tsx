@@ -5,13 +5,17 @@ import {
   Leaf, Star, Sun, Expand, Menu, X
 } from 'lucide-react';
 
+import { LoginModal } from './LoginModal';
+import type { UserRole } from '../types';
+
 interface LandingPageProps {
-  onEnterPortal: () => void;
+  onEnterPortal: (role?: UserRole) => void;
 }
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onEnterPortal }) => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 60);
@@ -100,14 +104,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterPortal }) => {
           <a href="#contact" style={{ color: 'rgba(255,255,255,0.85)', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 500 }}>Contact</a>
           <button
             id="landing-resident-login-btn"
-            onClick={onEnterPortal}
+            onClick={() => setIsLoginOpen(true)}
             style={{
               background: '#E9BB76', color: '#031D34', border: 'none', borderRadius: '8px',
               padding: '0.5rem 1.1rem', fontWeight: 800, fontSize: '0.85rem', cursor: 'pointer',
               display: 'flex', alignItems: 'center', gap: '0.4rem', transition: 'all 0.2s ease'
             }}
           >
-            Resident Login <ArrowRight size={14} />
+            Resident / MC Login <ArrowRight size={14} />
           </button>
         </div>
 
@@ -138,14 +142,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterPortal }) => {
             <a href="#portal" onClick={() => setMobileNavOpen(false)} style={{ color: '#FFF', textDecoration: 'none', fontWeight: 600, fontSize: '0.95rem' }}>Portal Modules</a>
             <a href="#contact" onClick={() => setMobileNavOpen(false)} style={{ color: '#FFF', textDecoration: 'none', fontWeight: 600, fontSize: '0.95rem' }}>Contact MC Office</a>
             <button
-              onClick={() => { setMobileNavOpen(false); onEnterPortal(); }}
+              onClick={() => { setMobileNavOpen(false); setIsLoginOpen(true); }}
               style={{
                 background: '#E9BB76', color: '#031D34', border: 'none', borderRadius: '8px',
                 padding: '0.75rem', fontWeight: 800, fontSize: '0.95rem', cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', width: '100%'
               }}
             >
-              Resident Portal Login <ArrowRight size={16} />
+              Resident / MC Login <ArrowRight size={16} />
             </button>
           </div>
         )}
@@ -408,7 +412,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterPortal }) => {
                   padding: '1.25rem', cursor: 'pointer', transition: 'all 0.2s ease',
                   boxShadow: '0 2px 8px rgba(3,29,52,0.04)'
                 }}
-                  onClick={onEnterPortal}
+                  onClick={() => setIsLoginOpen(true)}
                   onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 8px 24px rgba(11,71,105,0.12)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
                   onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 2px 8px rgba(3,29,52,0.04)'; e.currentTarget.style.transform = 'translateY(0)'; }}
                 >
@@ -429,7 +433,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterPortal }) => {
           <div style={{ textAlign: 'center' }}>
             <button
               id="portal-enter-btn"
-              onClick={onEnterPortal}
+              onClick={() => setIsLoginOpen(true)}
               style={{
                 background: '#031D34', color: '#E9BB76', border: 'none', borderRadius: '10px',
                 padding: '0.875rem 2.2rem', fontWeight: 800, fontSize: '1rem', cursor: 'pointer',
@@ -504,12 +508,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterPortal }) => {
                   Sonnur, Alamabdi PO, Malur Taluk, Kolar, Karnataka 563160
                 </div>
               </div>
-              <button onClick={onEnterPortal} style={{
+              <button onClick={() => setIsLoginOpen(true)} style={{
                 background: 'rgba(233,187,118,0.12)', border: '1px solid rgba(233,187,118,0.3)',
                 color: '#E9BB76', borderRadius: '8px', padding: '0.5rem 1.1rem',
                 fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem'
               }}>
-                Resident Login <ArrowRight size={13} />
+                Resident / MC Login <ArrowRight size={13} />
               </button>
             </div>
           </div>
@@ -529,6 +533,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterPortal }) => {
           </div>
         </div>
       </section>
+
+      {/* Temp MC Test Login Modal */}
+      <LoginModal
+        isOpen={isLoginOpen}
+        onClose={() => setIsLoginOpen(false)}
+        onLoginSuccess={(role) => onEnterPortal(role)}
+      />
     </div>
   );
 };

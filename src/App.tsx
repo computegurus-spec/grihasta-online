@@ -29,7 +29,10 @@ export function App() {
   if (showLanding) {
     return (
       <>
-        <LandingPage onEnterPortal={() => setShowLanding(false)} />
+        <LandingPage onEnterPortal={(role) => {
+          if (role) setActiveRole(role);
+          setShowLanding(false);
+        }} />
       </>
     );
   }
