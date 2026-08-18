@@ -270,7 +270,7 @@ export const LoginModal: React.FC<Props> = ({ isOpen, onClose, onLoginSuccess })
               ) : (
                 <form onSubmit={handleRegisterSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
                   <div style={{ background: '#E0F2FE', padding: '0.65rem 0.85rem', borderRadius: '6px', border: '1px solid #7DD3FC', fontSize: '0.8rem', color: '#075985' }}>
-                    📝 Fill out your resident details to register your villa. MC will verify and approve your account.
+                    📝 Fill out your resident details to register your villa.
                   </div>
 
                   <div className="form-group" style={{ marginBottom: 0 }}>
