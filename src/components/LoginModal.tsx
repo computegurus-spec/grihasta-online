@@ -45,17 +45,6 @@ export const LoginModal: React.FC<Props> = ({ isOpen, onClose, onLoginSuccess })
     setErrorMsg('Please enter valid email and password (or use MC Test Credentials: test@test.com / test).');
   };
 
-  const handleAutoTestMcLogin = () => {
-    setEmail('test@test.com');
-    setPassword('test');
-    setErrorMsg('');
-    setSuccessMsg('⚡ Auto-filling MC test credentials (test@test.com / test)...');
-    setTimeout(() => {
-      onLoginSuccess('MC_ADMIN');
-      handleClose();
-    }, 500);
-  };
-
   const handleClose = () => {
     setEmail('');
     setPassword('');
@@ -140,18 +129,6 @@ export const LoginModal: React.FC<Props> = ({ isOpen, onClose, onLoginSuccess })
               Sign In to Portal
             </button>
           </form>
-
-          {/* Quick 1-click Auto Test Login Button */}
-          <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid #E2E8F0', textAlign: 'center' }}>
-            <button
-              type="button"
-              onClick={handleAutoTestMcLogin}
-              className="btn btn-amber"
-              style={{ width: '100%', fontWeight: 800, fontSize: '0.82rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}
-            >
-              <Zap size={15} /> 1-Click MC Test Login (test@test.com)
-            </button>
-          </div>
         </div>
       </div>
     </div>
