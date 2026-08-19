@@ -26,7 +26,7 @@ export const LoginModal: React.FC<Props> = ({ isOpen, onClose, onLoginSuccess })
   const [regPassword, setRegPassword] = useState('');
   const [regLane, setRegLane] = useState('Lane 1');
   const [regVilla, setRegVilla] = useState('');
-  const [regOccupancy, setRegOccupancy] = useState<'Owner' | 'Tenant'>('Owner');
+  const [regOccupancy, setRegOccupancy] = useState<'Owner' | 'Tenant' | 'Admin'>('Owner');
   const [regSubmitted, setRegSubmitted] = useState(false);
 
   // Forgot password request state
@@ -65,6 +65,8 @@ export const LoginModal: React.FC<Props> = ({ isOpen, onClose, onLoginSuccess })
     e.preventDefault();
     if (!regName || !regMobile || !regVilla || !regLane || !regPassword) return;
 
+    const targetRole: UserRole = regOccupancy === 'Admin' ? 'MC_ADMIN' : regOccupancy === 'Owner' ? 'RESIDENT_OWNER' : 'RESIDENT_TENANT';
+
     DbConnector.submitMcApprovalRequest({
       name: regName,
       mobile: regMobile,
@@ -72,8 +74,8 @@ export const LoginModal: React.FC<Props> = ({ isOpen, onClose, onLoginSuccess })
       password: regPassword,
       laneNumber: regLane,
       villaNumber: regVilla,
-      occupancyType: regOccupancy,
-      requestedRole: regOccupancy === 'Owner' ? 'RESIDENT_OWNER' : 'RESIDENT_TENANT',
+      occupancyType: regOccupancy === 'Admin' ? 'Owner' : regOccupancy,
+      requestedRole: targetRole,
       requestType: 'Registration'
     });
 
@@ -197,7 +199,7 @@ export const LoginModal: React.FC<Props> = ({ isOpen, onClose, onLoginSuccess })
                   <input
                     type="text"
                     required
-                    placeholder="sadish.sugumaran@gmail.com or registered mobile"
+                    placeholder="Enter email address or mobile"
                     className="form-control"
                     style={{ fontSize: '0.85rem', padding: '0.45rem 0.65rem' }}
                     value={email}
@@ -349,15 +351,16 @@ export const LoginModal: React.FC<Props> = ({ isOpen, onClose, onLoginSuccess })
                   </div>
 
                   <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label style={{ fontSize: '0.8rem', color: '#031D34', fontWeight: 700 }}>Occupancy Status *</label>
+                    <label style={{ fontSize: '0.8rem', color: '#031D34', fontWeight: 700 }}>Occupancy Status / Access Level *</label>
                     <select
                       className="form-control"
                       style={{ fontSize: '0.85rem', padding: '0.45rem 0.65rem' }}
                       value={regOccupancy}
-                      onChange={(e) => setRegOccupancy(e.target.value as 'Owner' | 'Tenant')}
+                      onChange={(e) => setRegOccupancy(e.target.value as 'Owner' | 'Tenant' | 'Admin')}
                     >
                       <option value="Owner">Villa Owner (Owner Occupied)</option>
                       <option value="Tenant">Resident Tenant (Rented)</option>
+                      <option value="Admin">Management Committee Admin / Executive (MC)</option>
                     </select>
                   </div>
 
