@@ -7,34 +7,75 @@ export interface PendingUserApproval {
   id: string;
   name: string;
   mobile: string;
+  email?: string;
+  password?: string;
   laneNumber: string;
   villaNumber: string;
   requestedRole: UserRole;
   occupancyType: 'Owner' | 'Tenant';
+  requestType: 'Registration' | 'PasswordReset';
   submittedAt: string;
   status: 'Pending' | 'Approved' | 'Rejected';
 }
 
 const PENDING_APPROVALS_KEY = 'grihasta_pending_user_approvals_v1';
+const USER_PASSWORDS_KEY = 'grihasta_user_passwords_v1';
 
 export const DbConnector = {
   /**
+   * Store or update user password
+   */
+  setUserPassword: (identifier: string, pass: string) => {
+    try {
+      const stored = JSON.parse(localStorage.getItem(USER_PASSWORDS_KEY) || '{}');
+      stored[identifier.trim().toLowerCase()] = pass;
+      localStorage.setItem(USER_PASSWORDS_KEY, JSON.stringify(stored));
+    } catch (e) {}
+  },
+
+  /**
+   * Retrieve stored password for email or mobile
+   */
+  getUserPassword: (identifier: string): string | null => {
+    try {
+      const stored = JSON.parse(localStorage.getItem(USER_PASSWORDS_KEY) || '{}');
+      return stored[identifier.trim().toLowerCase()] || null;
+    } catch (e) {
+      return null;
+    }
+  },
+
+  /**
    * Check if user is eligible to register or log in with strict role enforcement.
-   * - Tenants can only log in as RESIDENT_TENANT
-   * - Owners can log in as RESIDENT_OWNER
    * - MC roles (MC_ADMIN / MC_MEMBER) MUST be manually approved by existing MC Super Admin
    */
   verifyAndAuthenticateResident: (
-    villaNumber: string,
-    mobile: string,
+    identifier: string,
+    passwordInput: string,
     requestedRole: UserRole
   ): { success: boolean; roleAssigned: UserRole; message: string } => {
-    // 1. Strict Rule: MC Admin and MC Member roles CANNOT be self-assigned
+    const cleanId = identifier.trim().toLowerCase();
+    const cleanPass = passwordInput.trim();
+
+    // 1. Temp MC credentials: test@test.com / test
+    if ((cleanId === 'test@test.com' || cleanId === 'test') && cleanPass === 'test') {
+      return {
+        success: true,
+        roleAssigned: 'MC_ADMIN',
+        message: '✅ Authenticated as Management Committee Admin.'
+      };
+    }
+
+    // 2. Strict Rule: MC Admin and MC Member roles CANNOT be self-assigned
     if (requestedRole === 'MC_ADMIN' || requestedRole === 'MC_MEMBER') {
       const approvedMCUsers = JSON.parse(localStorage.getItem('grihasta_approved_mc_users') || '[]');
-      const isApproved = approvedMCUsers.some((u: any) => u.mobile === mobile || u.villaNumber === villaNumber);
+      const isApproved = approvedMCUsers.some((u: any) => 
+        (u.email && u.email.toLowerCase() === cleanId) || 
+        (u.mobile && u.mobile === cleanId) || 
+        (u.villaNumber && u.villaNumber.toLowerCase() === cleanId)
+      );
 
-      if (!isApproved && mobile !== '9900015844') { // Default MC Super Admin
+      if (!isApproved && cleanId !== '9900015844') {
         return {
           success: false,
           roleAssigned: 'RESIDENT_OWNER',
@@ -48,40 +89,20 @@ export const DbConnector = {
       };
     }
 
-    // 2. Check Villa Directory record
-    const flats = StorageEngine.getFlats();
-    const cleanPlotStr = villaNumber.replace(/[^0-9]/g, '');
-    const flatRecord = flats.find(f => f.flatNumber === villaNumber || f.flatNumber.includes(cleanPlotStr));
-
-    if (!flatRecord) {
+    // 3. Verify registered password if available
+    const savedPass = DbConnector.getUserPassword(cleanId);
+    if (savedPass && savedPass !== cleanPass) {
       return {
         success: false,
         roleAssigned: 'RESIDENT_OWNER',
-        message: `⚠️ Villa #${villaNumber} was not found in the 400-Villa Master Directory. Please contact MC Office.`
-      };
-    }
-
-    // 3. Strict Owner vs Tenant Role Enforcement
-    if (flatRecord.occupancyType === 'Rented' && requestedRole === 'RESIDENT_OWNER') {
-      return {
-        success: false,
-        roleAssigned: 'RESIDENT_TENANT',
-        message: `ℹ️ Villa #${villaNumber} is registered as Tenant occupied. Authenticating you under Tenant Resident Portal.`
-      };
-    }
-
-    if (flatRecord.occupancyType === 'Owner Occupied' && requestedRole === 'RESIDENT_TENANT') {
-      return {
-        success: false,
-        roleAssigned: 'RESIDENT_OWNER',
-        message: `ℹ️ Villa #${villaNumber} is registered as Owner occupied. Authenticating you under Owner Resident Portal.`
+        message: '❌ Invalid Password. If you forgot your password, please request an MC Password Reset.'
       };
     }
 
     return {
       success: true,
-      roleAssigned: flatRecord.occupancyType === 'Rented' ? 'RESIDENT_TENANT' : 'RESIDENT_OWNER',
-      message: `✅ Authenticated cleanly as ${flatRecord.occupancyType} for Villa #${flatRecord.flatNumber}.`
+      roleAssigned: requestedRole === 'RESIDENT_TENANT' ? 'RESIDENT_TENANT' : 'RESIDENT_OWNER',
+      message: '✅ Signed in successfully.'
     };
   },
 
@@ -104,6 +125,7 @@ export const DbConnector = {
     try {
       localStorage.removeItem(PENDING_APPROVALS_KEY);
       localStorage.removeItem('grihasta_approved_mc_users');
+      localStorage.removeItem(USER_PASSWORDS_KEY);
       console.log('All existing registrations purged.');
     } catch (e) {
       console.error('Failed to purge registrations', e);
@@ -113,10 +135,13 @@ export const DbConnector = {
   submitMcApprovalRequest: (req: {
     name: string;
     mobile: string;
+    email?: string;
+    password?: string;
     laneNumber?: string;
     villaNumber: string;
     occupancyType: 'Owner' | 'Tenant';
     requestedRole: UserRole;
+    requestType?: 'Registration' | 'PasswordReset';
   }) => {
     const list = DbConnector.getPendingApprovals();
     const laneNumber = req.laneNumber || getLaneForVillaNumber(req.villaNumber);
@@ -125,13 +150,23 @@ export const DbConnector = {
       id: `appr-${Date.now()}`,
       name: req.name,
       mobile: req.mobile,
+      email: req.email,
+      password: req.password,
       laneNumber,
       villaNumber: req.villaNumber,
       occupancyType: req.occupancyType,
       requestedRole: req.requestedRole,
+      requestType: req.requestType || 'Registration',
       submittedAt: new Date().toISOString().split('T')[0],
       status: 'Pending'
     };
+
+    if (req.password && req.email) {
+      DbConnector.setUserPassword(req.email, req.password);
+    }
+    if (req.password && req.mobile) {
+      DbConnector.setUserPassword(req.mobile, req.password);
+    }
 
     list.unshift(newItem);
     localStorage.setItem(PENDING_APPROVALS_KEY, JSON.stringify(list));
@@ -145,17 +180,17 @@ export const DbConnector = {
             id: newItem.id,
             name: newItem.name,
             mobile: newItem.mobile,
+            email: newItem.email,
             lane_number: newItem.laneNumber,
             villa_number: newItem.villaNumber,
             occupancy_type: newItem.occupancyType,
             requested_role: newItem.requestedRole,
+            request_type: newItem.requestType,
             status: newItem.status,
             submitted_at: newItem.submittedAt
           });
         if (error) {
-          console.warn('Supabase cloud insert notice (table access_requests may need schema init):', error.message);
-        } else {
-          console.log('Successfully synced registration request to Supabase cloud!');
+          console.warn('Supabase cloud insert notice:', error.message);
         }
       } catch (err: any) {
         console.warn('Supabase sync catch:', err);
@@ -163,6 +198,24 @@ export const DbConnector = {
     })();
 
     return newItem;
+  },
+
+  /**
+   * Reset user password by MC Admin
+   */
+  resetUserPassword: (approvalId: string, customNewPass?: string): string => {
+    const newPass = customNewPass || 'Grihasta@123';
+    const list = DbConnector.getPendingApprovals();
+    const item = list.find(a => a.id === approvalId);
+    if (item) {
+      item.password = newPass;
+      item.status = 'Approved';
+      if (item.email) DbConnector.setUserPassword(item.email, newPass);
+      if (item.mobile) DbConnector.setUserPassword(item.mobile, newPass);
+      if (item.villaNumber) DbConnector.setUserPassword(item.villaNumber, newPass);
+      localStorage.setItem(PENDING_APPROVALS_KEY, JSON.stringify(list));
+    }
+    return newPass;
   },
 
   approveMcUser: (approvalId: string) => {

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StorageEngine } from '../services/storage';
 import { DbConnector } from '../services/dbConnector';
-import { BarChart3, TrendingUp, AlertTriangle, Users, CheckCircle, XCircle, UserCheck, Trash2, MapPin } from 'lucide-react';
+import { BarChart3, TrendingUp, AlertTriangle, Users, CheckCircle, XCircle, UserCheck, Trash2, MapPin, KeyRound } from 'lucide-react';
 
 export const Module08_AdminDashboard: React.FC = () => {
   const flats = StorageEngine.getFlats();
@@ -23,6 +23,15 @@ export const Module08_AdminDashboard: React.FC = () => {
   const handleReject = (id: string) => {
     DbConnector.rejectMcUser(id);
     setApprovals(DbConnector.getPendingApprovals());
+  };
+
+  const handleResetPass = (id: string, name: string) => {
+    const inputPass = window.prompt(`Set new password for ${name}:`, 'Grihasta@123');
+    if (inputPass) {
+      const assigned = DbConnector.resetUserPassword(id, inputPass);
+      setApprovals(DbConnector.getPendingApprovals());
+      alert(`✅ Password for ${name} has been set to: ${assigned}`);
+    }
   };
 
   const handlePurgeAll = () => {
@@ -50,9 +59,9 @@ export const Module08_AdminDashboard: React.FC = () => {
       <div className="card" style={{ background: '#FFF', border: '2px solid #0B4769', boxShadow: '0 10px 30px rgba(11,71,105,0.12)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
           <div>
-            <span className="badge badge-amber" style={{ fontWeight: 800, marginBottom: '0.3rem' }}>APPROVAL QUEUE</span>
+            <span className="badge badge-amber" style={{ fontWeight: 800, marginBottom: '0.3rem' }}>APPROVAL QUEUE & ACCOUNTS</span>
             <h3 style={{ color: '#0B4769', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <UserCheck size={22} style={{ color: '#E9BB76' }} /> ⚡ Pending Resident & MC Access Requests
+              <UserCheck size={22} style={{ color: '#E9BB76' }} /> ⚡ Pending Resident Approvals & Password Resets
             </h3>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
@@ -87,7 +96,7 @@ export const Module08_AdminDashboard: React.FC = () => {
                   <th>Mobile</th>
                   <th>Lane Number</th>
                   <th>Villa / Plot</th>
-                  <th>Occupancy & Requested Role</th>
+                  <th>Request Details</th>
                   <th>Submitted</th>
                   <th>Status</th>
                   <th>MC Action</th>
@@ -107,6 +116,9 @@ export const Module08_AdminDashboard: React.FC = () => {
                     <td>
                       <div style={{ fontSize: '0.8rem' }}>
                         <strong>{a.occupancyType}</strong> ({a.requestedRole})
+                        {a.requestType === 'PasswordReset' && (
+                          <span className="badge badge-overdue" style={{ marginLeft: '4px', fontSize: '0.7rem' }}>🔑 Reset Password Request</span>
+                        )}
                       </div>
                     </td>
                     <td><span style={{ fontSize: '0.78rem', color: '#64748B' }}>{a.submittedAt}</span></td>
@@ -116,28 +128,34 @@ export const Module08_AdminDashboard: React.FC = () => {
                       </span>
                     </td>
                     <td>
-                      {a.status === 'Pending' ? (
-                        <div style={{ display: 'flex', gap: '0.4rem' }}>
-                          <button
-                            onClick={() => handleApprove(a.id)}
-                            className="btn btn-sm btn-primary"
-                            style={{ padding: '0.2rem 0.6rem', fontSize: '0.75rem', background: '#16A34A', border: 'none' }}
-                          >
-                            <CheckCircle size={13} /> Approve
-                          </button>
-                          <button
-                            onClick={() => handleReject(a.id)}
-                            className="btn btn-sm btn-secondary"
-                            style={{ padding: '0.2rem 0.6rem', fontSize: '0.75rem', background: '#991B1B', color: '#FFF', border: 'none' }}
-                          >
-                            <XCircle size={13} /> Reject
-                          </button>
-                        </div>
-                      ) : (
-                        <span style={{ fontSize: '0.75rem', color: '#64748B', fontStyle: 'italic' }}>
-                          {a.status === 'Approved' ? '✅ Verified & Granted' : '❌ Access Declined'}
-                        </span>
-                      )}
+                      <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+                        {a.status === 'Pending' && (
+                          <>
+                            <button
+                              onClick={() => handleApprove(a.id)}
+                              className="btn btn-sm btn-primary"
+                              style={{ padding: '0.2rem 0.5rem', fontSize: '0.72rem', background: '#16A34A', border: 'none' }}
+                            >
+                              <CheckCircle size={12} /> Approve
+                            </button>
+                            <button
+                              onClick={() => handleReject(a.id)}
+                              className="btn btn-sm btn-secondary"
+                              style={{ padding: '0.2rem 0.5rem', fontSize: '0.72rem', background: '#991B1B', color: '#FFF', border: 'none' }}
+                            >
+                              <XCircle size={12} /> Reject
+                            </button>
+                          </>
+                        )}
+                        <button
+                          onClick={() => handleResetPass(a.id, a.name)}
+                          className="btn btn-sm"
+                          style={{ padding: '0.2rem 0.5rem', fontSize: '0.72rem', background: '#0B4769', color: '#FFF', border: 'none' }}
+                          title="Set custom temporary password for resident"
+                        >
+                          <KeyRound size={12} /> Reset Pass
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Lock, Mail, KeyRound, CheckCircle2, Zap, User, Phone, Home, ShieldCheck, ArrowRight, UserPlus, LogIn, MapPin } from 'lucide-react';
+import { X, Lock, Mail, KeyRound, CheckCircle2, Zap, User, Phone, Home, ArrowRight, UserPlus, LogIn, MapPin } from 'lucide-react';
 import { DbConnector } from '../services/dbConnector';
 import { getLaneForVillaNumber } from '../utils/laneMapping';
 import type { UserRole } from '../types';
@@ -11,7 +11,7 @@ interface Props {
 }
 
 export const LoginModal: React.FC<Props> = ({ isOpen, onClose, onLoginSuccess }) => {
-  const [activeTab, setActiveTab] = useState<'signin' | 'register'>('signin');
+  const [activeTab, setActiveTab] = useState<'signin' | 'register' | 'forgot'>('signin');
 
   // Sign in state
   const [email, setEmail] = useState('');
@@ -22,10 +22,17 @@ export const LoginModal: React.FC<Props> = ({ isOpen, onClose, onLoginSuccess })
   // First-time Registration state
   const [regName, setRegName] = useState('');
   const [regMobile, setRegMobile] = useState('');
+  const [regEmail, setRegEmail] = useState('');
+  const [regPassword, setRegPassword] = useState('');
   const [regLane, setRegLane] = useState('Lane 1');
   const [regVilla, setRegVilla] = useState('');
   const [regOccupancy, setRegOccupancy] = useState<'Owner' | 'Tenant'>('Owner');
   const [regSubmitted, setRegSubmitted] = useState(false);
+
+  // Forgot password request state
+  const [resetVilla, setResetVilla] = useState('');
+  const [resetMobile, setResetMobile] = useState('');
+  const [resetSubmitted, setResetSubmitted] = useState(false);
 
   if (!isOpen) return null;
 
@@ -36,50 +43,57 @@ export const LoginModal: React.FC<Props> = ({ isOpen, onClose, onLoginSuccess })
     const cleanEmail = email.trim().toLowerCase();
     const cleanPass = password.trim();
 
-    // Temp MC credentials: test@test.com / test
-    if ((cleanEmail === 'test@test.com' || cleanEmail === 'test') && cleanPass === 'test') {
-      setSuccessMsg('✅ MC Credentials Verified! Signing into Management Committee Admin Portal...');
-      setTimeout(() => {
-        onLoginSuccess('MC_ADMIN');
-        handleClose();
-      }, 500);
+    if (!cleanEmail || !cleanPass) {
+      setErrorMsg('Please enter both Email and Password.');
       return;
     }
 
-    if (cleanEmail && cleanPass) {
-      setSuccessMsg('✅ Signed in successfully. Entering Grihasta Portal...');
+    const authRes = DbConnector.verifyAndAuthenticateResident(cleanEmail, cleanPass, 'RESIDENT_OWNER');
+
+    if (authRes.success) {
+      setSuccessMsg(authRes.message);
       setTimeout(() => {
-        onLoginSuccess('RESIDENT_OWNER');
+        onLoginSuccess(authRes.roleAssigned);
         handleClose();
-      }, 500);
-      return;
+      }, 400);
+    } else {
+      setErrorMsg(authRes.message);
     }
-
-    setErrorMsg('Please enter valid credentials (or MC Test Credentials: test@test.com / test).');
-  };
-
-  const handleAuth0SignIn = () => {
-    setSuccessMsg('⚡ Redirecting to Auth0 Secure Authentication (Google / SSO)...');
-    setTimeout(() => {
-      onLoginSuccess('RESIDENT_OWNER');
-      handleClose();
-    }, 600);
   };
 
   const handleRegisterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!regName || !regMobile || !regVilla || !regLane) return;
+    if (!regName || !regMobile || !regVilla || !regLane || !regPassword) return;
 
     DbConnector.submitMcApprovalRequest({
       name: regName,
       mobile: regMobile,
+      email: regEmail,
+      password: regPassword,
       laneNumber: regLane,
       villaNumber: regVilla,
       occupancyType: regOccupancy,
-      requestedRole: regOccupancy === 'Owner' ? 'RESIDENT_OWNER' : 'RESIDENT_TENANT'
+      requestedRole: regOccupancy === 'Owner' ? 'RESIDENT_OWNER' : 'RESIDENT_TENANT',
+      requestType: 'Registration'
     });
 
     setRegSubmitted(true);
+  };
+
+  const handleForgotSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resetVilla || !resetMobile) return;
+
+    DbConnector.submitMcApprovalRequest({
+      name: `Password Reset Request (${resetVilla})`,
+      mobile: resetMobile,
+      villaNumber: resetVilla,
+      occupancyType: 'Owner',
+      requestedRole: 'RESIDENT_OWNER',
+      requestType: 'PasswordReset'
+    });
+
+    setResetSubmitted(true);
   };
 
   const handleClose = () => {
@@ -89,9 +103,15 @@ export const LoginModal: React.FC<Props> = ({ isOpen, onClose, onLoginSuccess })
     setSuccessMsg('');
     setRegName('');
     setRegMobile('');
+    setRegEmail('');
+    setRegPassword('');
     setRegLane('Lane 1');
     setRegVilla('');
     setRegSubmitted(false);
+    setResetVilla('');
+    setResetMobile('');
+    setResetSubmitted(false);
+    setActiveTab('signin');
     onClose();
   };
 
@@ -129,7 +149,7 @@ export const LoginModal: React.FC<Props> = ({ isOpen, onClose, onLoginSuccess })
               gap: '0.4rem'
             }}
           >
-            <LogIn size={16} /> Registered User Login
+            <LogIn size={16} /> Sign In
           </button>
           <button
             onClick={() => setActiveTab('register')}
@@ -149,7 +169,7 @@ export const LoginModal: React.FC<Props> = ({ isOpen, onClose, onLoginSuccess })
               gap: '0.4rem'
             }}
           >
-            <UserPlus size={16} /> First-Time Registration
+            <UserPlus size={16} /> Register Account
           </button>
         </div>
 
@@ -166,58 +186,28 @@ export const LoginModal: React.FC<Props> = ({ isOpen, onClose, onLoginSuccess })
             </div>
           )}
 
-          {/* TAB 1: SIGN IN (Auth0 / Credentials) */}
+          {/* TAB 1: SIGN IN */}
           {activeTab === 'signin' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
-              {/* Auth0 Social Sign In Button */}
-              <button
-                type="button"
-                onClick={handleAuth0SignIn}
-                className="btn"
-                style={{
-                  background: '#0B4769',
-                  color: '#FFF',
-                  width: '100%',
-                  padding: '0.75rem',
-                  fontWeight: 800,
-                  fontSize: '0.9rem',
-                  borderRadius: '8px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '0.5rem',
-                  border: 'none',
-                  boxShadow: '0 2px 8px rgba(11,71,105,0.2)'
-                }}
-              >
-                <ShieldCheck size={18} style={{ color: '#E9BB76' }} /> Sign in with Google / Single Sign-On
-              </button>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#94A3B8', fontSize: '0.78rem' }}>
-                <div style={{ flex: 1, height: '1px', background: '#E2E8F0' }} />
-                <span>OR MC Admin Sign In</span>
-                <div style={{ flex: 1, height: '1px', background: '#E2E8F0' }} />
-              </div>
-
-              {/* Temporary MC Credentials Pill */}
+              {/* Credentials Note */}
               <div style={{ background: '#FEF9C3', border: '1px solid #FDE047', borderRadius: '8px', padding: '0.65rem 0.85rem', fontSize: '0.8rem', color: '#854D0E' }}>
                 <div style={{ fontWeight: 800, color: '#713F12', marginBottom: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                  <Zap size={14} style={{ color: '#D97706' }} /> MC Login Credentials:
+                  <Zap size={14} style={{ color: '#D97706' }} /> MC Admin Test Login:
                 </div>
                 <div>
-                  Email: <code style={{ background: '#FFF', padding: '1px 5px', borderRadius: '4px', fontWeight: 800 }}>test@test.com</code> | Password: <code style={{ background: '#FFF', padding: '1px 5px', borderRadius: '4px', fontWeight: 800 }}>test</code>
+                  Email: <strong>test@test.com</strong> | Password: <strong>test</strong>
                 </div>
               </div>
 
               <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
                 <div className="form-group" style={{ marginBottom: 0 }}>
                   <label style={{ fontSize: '0.8rem', color: '#031D34', fontWeight: 700 }}>
-                    <Mail size={13} style={{ display: 'inline', marginRight: '4px' }} /> Email Address
+                    <Mail size={13} style={{ display: 'inline', marginRight: '4px' }} /> Email Address or Mobile *
                   </label>
                   <input
                     type="text"
                     required
-                    placeholder="test@test.com"
+                    placeholder="resident@grihasta.online or test@test.com"
                     className="form-control"
                     style={{ fontSize: '0.85rem', padding: '0.45rem 0.65rem' }}
                     value={email}
@@ -226,13 +216,22 @@ export const LoginModal: React.FC<Props> = ({ isOpen, onClose, onLoginSuccess })
                 </div>
 
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label style={{ fontSize: '0.8rem', color: '#031D34', fontWeight: 700 }}>
-                    <KeyRound size={13} style={{ display: 'inline', marginRight: '4px' }} /> Password
-                  </label>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <label style={{ fontSize: '0.8rem', color: '#031D34', fontWeight: 700 }}>
+                      <KeyRound size={13} style={{ display: 'inline', marginRight: '4px' }} /> Password *
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('forgot')}
+                      style={{ background: 'none', border: 'none', color: '#0B4769', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', padding: 0 }}
+                    >
+                      Forgot Password?
+                    </button>
+                  </div>
                   <input
                     type="password"
                     required
-                    placeholder="test"
+                    placeholder="Enter password"
                     className="form-control"
                     style={{ fontSize: '0.85rem', padding: '0.45rem 0.65rem' }}
                     value={password}
@@ -257,12 +256,12 @@ export const LoginModal: React.FC<Props> = ({ isOpen, onClose, onLoginSuccess })
               {regSubmitted ? (
                 <div style={{ textAlign: 'center', padding: '1rem 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
                   <CheckCircle2 size={50} style={{ color: '#16A34A' }} />
-                  <h4 style={{ color: '#031D34', margin: 0 }}>Registration Request Sent!</h4>
+                  <h4 style={{ color: '#031D34', margin: 0 }}>Account Registration Submitted!</h4>
                   <p style={{ fontSize: '0.85rem', color: '#475569', lineHeight: 1.5 }}>
-                    Thank you <strong>{regName}</strong>. Your registration details for <strong>{regLane} — {regVilla}</strong> have been submitted to the Management Committee for verification.
+                    Thank you <strong>{regName}</strong>. Your registration for <strong>{regLane} — {regVilla}</strong> has been submitted to the Management Committee.
                   </p>
                   <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', padding: '0.75rem', borderRadius: '6px', fontSize: '0.8rem', color: '#166534', width: '100%' }}>
-                    An MC member will approve your account shortly.
+                    An MC member will approve your resident access shortly.
                   </div>
                   <button onClick={handleClose} className="btn btn-primary" style={{ marginTop: '0.5rem', width: '100%' }}>
                     Done & Close
@@ -271,7 +270,7 @@ export const LoginModal: React.FC<Props> = ({ isOpen, onClose, onLoginSuccess })
               ) : (
                 <form onSubmit={handleRegisterSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
                   <div style={{ background: '#E0F2FE', padding: '0.65rem 0.85rem', borderRadius: '6px', border: '1px solid #7DD3FC', fontSize: '0.8rem', color: '#075985' }}>
-                    📝 Fill out your resident details including your explicit Lane Number to register your villa.
+                    📝 Enter your resident details and choose a secure password to register.
                   </div>
 
                   <div className="form-group" style={{ marginBottom: 0 }}>
@@ -301,6 +300,20 @@ export const LoginModal: React.FC<Props> = ({ isOpen, onClose, onLoginSuccess })
                       style={{ fontSize: '0.85rem', padding: '0.45rem 0.65rem' }}
                       value={regMobile}
                       onChange={(e) => setRegMobile(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label style={{ fontSize: '0.8rem', color: '#031D34', fontWeight: 700 }}>
+                      <Mail size={13} style={{ display: 'inline', marginRight: '4px' }} /> Email Address (Optional)
+                    </label>
+                    <input
+                      type="email"
+                      placeholder="resident@example.com"
+                      className="form-control"
+                      style={{ fontSize: '0.85rem', padding: '0.45rem 0.65rem' }}
+                      value={regEmail}
+                      onChange={(e) => setRegEmail(e.target.value)}
                     />
                   </div>
 
@@ -358,13 +371,103 @@ export const LoginModal: React.FC<Props> = ({ isOpen, onClose, onLoginSuccess })
                     </select>
                   </div>
 
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label style={{ fontSize: '0.8rem', color: '#031D34', fontWeight: 700 }}>
+                      <KeyRound size={13} style={{ display: 'inline', marginRight: '4px' }} /> Choose Password *
+                    </label>
+                    <input
+                      type="password"
+                      required
+                      placeholder="Choose a password"
+                      className="form-control"
+                      style={{ fontSize: '0.85rem', padding: '0.45rem 0.65rem' }}
+                      value={regPassword}
+                      onChange={(e) => setRegPassword(e.target.value)}
+                    />
+                  </div>
+
                   <button
                     type="submit"
                     className="btn btn-primary"
                     style={{ width: '100%', fontWeight: 800, padding: '0.65rem', marginTop: '0.4rem' }}
                   >
-                    Register First-Time Account
+                    Register Account
                   </button>
+                </form>
+              )}
+            </div>
+          )}
+
+          {/* TAB 3: FORGOT PASSWORD REQUEST */}
+          {activeTab === 'forgot' && (
+            <div>
+              {resetSubmitted ? (
+                <div style={{ textAlign: 'center', padding: '1rem 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
+                  <CheckCircle2 size={50} style={{ color: '#16A34A' }} />
+                  <h4 style={{ color: '#031D34', margin: 0 }}>Reset Request Sent to MC!</h4>
+                  <p style={{ fontSize: '0.85rem', color: '#475569', lineHeight: 1.5 }}>
+                    Your password reset request for <strong>{resetVilla}</strong> has been sent to the Management Committee.
+                  </p>
+                  <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', padding: '0.75rem', borderRadius: '6px', fontSize: '0.8rem', color: '#166534', width: '100%' }}>
+                    An MC member will reset your password to a temporary key (e.g. <code>Grihasta@123</code>).
+                  </div>
+                  <button onClick={handleClose} className="btn btn-primary" style={{ marginTop: '0.5rem', width: '100%' }}>
+                    Done & Close
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={handleForgotSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                  <div style={{ background: '#FEF3C7', padding: '0.65rem 0.85rem', borderRadius: '6px', border: '1px solid #FCD34D', fontSize: '0.8rem', color: '#92400E' }}>
+                    🔑 <strong>Request MC Password Reset:</strong> Enter your Villa Number and Mobile Number below to send a reset request to the MC Committee.
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label style={{ fontSize: '0.8rem', color: '#031D34', fontWeight: 700 }}>
+                      <Home size={13} style={{ display: 'inline', marginRight: '4px' }} /> Villa / Plot Number *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Plot 42 or Villa 306"
+                      className="form-control"
+                      style={{ fontSize: '0.85rem', padding: '0.45rem 0.65rem' }}
+                      value={resetVilla}
+                      onChange={(e) => setResetVilla(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label style={{ fontSize: '0.8rem', color: '#031D34', fontWeight: 700 }}>
+                      <Phone size={13} style={{ display: 'inline', marginRight: '4px' }} /> Registered Mobile Number *
+                    </label>
+                    <input
+                      type="tel"
+                      required
+                      placeholder="e.g. +91 98765 43210"
+                      className="form-control"
+                      style={{ fontSize: '0.85rem', padding: '0.45rem 0.65rem' }}
+                      value={resetMobile}
+                      onChange={(e) => setResetMobile(e.target.value)}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '0.6rem', marginTop: '0.4rem' }}>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('signin')}
+                      className="btn btn-secondary"
+                      style={{ flex: 1 }}
+                    >
+                      Back to Sign In
+                    </button>
+                    <button
+                      type="submit"
+                      className="btn btn-primary"
+                      style={{ flex: 1, fontWeight: 800 }}
+                    >
+                      Send Reset Request
+                    </button>
+                  </div>
                 </form>
               )}
             </div>
