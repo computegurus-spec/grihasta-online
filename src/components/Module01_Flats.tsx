@@ -9,12 +9,24 @@ interface Props {
 }
 
 export const Module01_Flats: React.FC<Props> = ({ role }) => {
-  const [flats, setFlats] = useState<Flat[]>(StorageEngine.getFlats());
+  const [flats, setFlats] = useState<Flat[]>(() => {
+    const list = StorageEngine.getFlats();
+    return list.filter(f => f.id !== 'f-1787134125440' && !f.id.includes('1787134125440'));
+  });
   const [domesticHelp, setDomesticHelp] = useState<DomesticHelp[]>(StorageEngine.getDomesticHelp());
   
   const [selectedBlock, setSelectedBlock] = useState<string>('ALL');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'flats' | 'domestic_help'>('flats');
+
+  // Delete Villa Plot Handler
+  const handleDeleteFlat = (flatId: string) => {
+    if (window.confirm('Are you sure you want to delete this villa record from the directory?')) {
+      const updated = flats.filter(f => f.id !== flatId);
+      setFlats(updated);
+      StorageEngine.saveFlats(updated);
+    }
+  };
 
   // Modals
   const [isFlatModalOpen, setIsFlatModalOpen] = useState(false);
@@ -334,9 +346,20 @@ export const Module01_Flats: React.FC<Props> = ({ role }) => {
                         </div>
                       </div>
                       
-                      <span className={`badge ${flat.occupancyType === 'Owner Occupied' ? 'badge-sage' : flat.occupancyType === 'Rented' ? 'badge-ocean' : 'badge-pending'}`}>
-                        {flat.occupancyType}
-                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        <span className={`badge ${flat.occupancyType === 'Owner Occupied' ? 'badge-sage' : flat.occupancyType === 'Rented' ? 'badge-ocean' : 'badge-pending'}`}>
+                          {flat.occupancyType}
+                        </span>
+                        {canEdit && (
+                          <button
+                            onClick={() => handleDeleteFlat(flat.id)}
+                            style={{ background: '#FEE2E2', border: '1px solid #FCA5A5', color: '#991B1B', borderRadius: '4px', padding: '2px 6px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                            title="Delete Villa Record"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        )}
+                      </div>
                     </div>
 
                     <div style={{ background: '#F8FAFC', padding: '0.75rem', borderRadius: '8px', border: '1px solid #E2E8F0', display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
