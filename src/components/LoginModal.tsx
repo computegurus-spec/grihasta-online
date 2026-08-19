@@ -190,7 +190,7 @@ export const LoginModal: React.FC<Props> = ({ isOpen, onClose, onLoginSuccess })
                   boxShadow: '0 2px 8px rgba(11,71,105,0.2)'
                 }}
               >
-                <ShieldCheck size={18} style={{ color: '#E9BB76' }} /> Sign in with Auth0 (Google / SSO)
+                <ShieldCheck size={18} style={{ color: '#E9BB76' }} /> Sign in with Google / Single Sign-On
               </button>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#94A3B8', fontSize: '0.78rem' }}>
@@ -202,13 +202,10 @@ export const LoginModal: React.FC<Props> = ({ isOpen, onClose, onLoginSuccess })
               {/* Temporary MC Credentials Pill */}
               <div style={{ background: '#FEF9C3', border: '1px solid #FDE047', borderRadius: '8px', padding: '0.65rem 0.85rem', fontSize: '0.8rem', color: '#854D0E' }}>
                 <div style={{ fontWeight: 800, color: '#713F12', marginBottom: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                  <Zap size={14} style={{ color: '#D97706' }} /> MC Temporary Login:
+                  <Zap size={14} style={{ color: '#D97706' }} /> MC Login Credentials:
                 </div>
                 <div>
                   Email: <code style={{ background: '#FFF', padding: '1px 5px', borderRadius: '4px', fontWeight: 800 }}>test@test.com</code> | Password: <code style={{ background: '#FFF', padding: '1px 5px', borderRadius: '4px', fontWeight: 800 }}>test</code>
-                </div>
-                <div style={{ fontSize: '0.73rem', opacity: 0.85, marginTop: '0.2rem' }}>
-                  *(Tomorrow MC members can log in with their Gmail IDs and reset password on first login)*
                 </div>
               </div>
 

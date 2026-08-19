@@ -43,13 +43,6 @@ export const Module08_AdminDashboard: React.FC = () => {
 
   const pendingCount = approvals.filter(a => a.status === 'Pending').length;
 
-  const phases = [
-    { phase: 'Phase 1: Core Foundation', weeks: 'V1.0 Handover', items: ['Villa plot directory', 'Owner & tenant profiles', 'Vehicle registration', 'Domestic help log'], status: 'Completed', color: '#31532C' },
-    { phase: 'Phase 2: Operational Enhancements', weeks: 'Phase 2 Release 🚀', items: ['3-Tier Access Portals', 'Dynamic Lane Mapping', 'Adults/Kids Water & Garbage Metrics', 'Back Gate (Water Tank) Security', 'Car Washing Bay Booking', 'Waste Segregation Guide'], status: 'Ready to Release', color: '#0B4769' },
-    { phase: 'Phase 3: Automated Communications', weeks: 'Phase 3 Target', items: ['WhatsApp Gate Alerts', 'Automated Defaulter Reminders', 'Broadcast Circular SMS', 'Digital QR Gate Passes'], status: 'Scheduled', color: '#1E6B85' },
-    { phase: 'Phase 4: Cloud DB & Auth Integration', weeks: 'Phase 4 Target', items: ['Supabase / Firebase Backend Adapter', 'OTP Mobile Auth', 'Live Payment Gateway', 'Analytics API'], status: 'Scheduled', color: '#E9BB76' },
-  ];
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
@@ -154,35 +147,14 @@ export const Module08_AdminDashboard: React.FC = () => {
         )}
       </div>
 
-      {/* Phase 2 Release Readiness Control Banner */}
-      <div style={{ background: 'linear-gradient(135deg, #0B4769 0%, #031D34 100%)', color: '#FFF', padding: '1.25rem 1.5rem', borderRadius: '12px', border: '2px solid #E9BB76', boxShadow: '0 8px 24px rgba(3,29,52,0.3)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-        <div>
-          <span className="badge badge-amber" style={{ marginBottom: '0.4rem', fontWeight: 800 }}>🚀 PHASE 2 RELEASE READINESS CENTER</span>
-          <h3 style={{ color: '#E9BB76', margin: '0.2rem 0' }}>Phase 2 Features Active & Deployment Verified</h3>
-          <p style={{ fontSize: '0.88rem', color: '#EFEED2', opacity: 0.9 }}>
-            Multi-gate security tracking, dynamic villa lane auto-mapping, resident demographics (Adults & Kids water/garbage metrics), and car wash facility reservations are live.
-          </p>
-        </div>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <button onClick={() => alert('Phase 2 release package is verified & live on Vercel deployment! All 9 modules are operational.')} className="btn btn-amber" style={{ fontWeight: 800 }}>
-            Verify Phase 2 Release
-          </button>
-        </div>
-      </div>
-
       {/* Banner */}
       <div className="card card-sage" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
           <span className="badge badge-sage" style={{ marginBottom: '0.4rem' }}>MODULE 08</span>
-          <h2>📊 MC Executive Admin Dashboard</h2>
+          <h2>📊 Management Committee Executive Dashboard</h2>
           <p style={{ fontSize: '0.9rem', color: '#031D34' }}>
-            High-level metrics for Management Committee leadership — collection rates, pending complaints, occupancy snapshot, and implementation roadmap.
+            High-level operational metrics for layout leadership — maintenance dues collection rates, open helpdesk requests, staff attendance, and occupancy overview.
           </p>
-        </div>
-
-        <div style={{ background: '#031D34', color: '#E9BB76', padding: '0.6rem 1rem', borderRadius: '8px', fontWeight: 800, textAlign: 'right' }}>
-          <div>ANNUAL RUN COST: ~₹14,300/yr</div>
-          <div style={{ fontSize: '0.75rem', color: '#FFF', fontWeight: 400 }}>₹0 Dev Cost · Complete MC Ownership</div>
         </div>
       </div>
 
@@ -222,31 +194,6 @@ export const Module08_AdminDashboard: React.FC = () => {
             <span style={{ fontSize: '0.75rem', color: '#64748B' }}>{occupiedFlats} of {flats.length} Flats</span>
           </div>
           <BarChart3 size={32} style={{ color: '#1E6B85' }} />
-        </div>
-      </div>
-
-      {/* Implementation Timeline Card */}
-      <div className="card">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-          <h3>🚀 Grihasta Release Roadmap (Phase 1 – Phase 4)</h3>
-          <span className="badge badge-paid">PHASE 2 READY FOR RELEASE</span>
-        </div>
-
-        <div className="grid-2">
-          {phases.map((p, idx) => (
-            <div key={idx} style={{ background: '#F8FAFC', border: `1.5px solid ${p.color}`, borderRadius: '10px', padding: '1rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                <h4 style={{ color: p.color }}>{p.phase}</h4>
-                <span className="badge" style={{ background: p.color, color: '#FFF' }}>{p.weeks}</span>
-              </div>
-
-              <ul style={{ paddingLeft: '1.25rem', fontSize: '0.85rem', color: '#475569' }}>
-                {p.items.map((item, i) => (
-                  <li key={i}>{item}</li>
-                ))}
-              </ul>
-            </div>
-          ))}
         </div>
       </div>
 
@@ -307,38 +254,23 @@ export const Module08_AdminDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* MC Member Manual Approval & Database Setup Box */}
-      <div className="card" style={{ background: '#F8FAFC', border: '2px dashed #0B4769' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
+      {/* MC Security & Access Governance Control Box */}
+      <div className="card" style={{ background: '#F8FAFC', border: '1.5px solid #CBD5E1' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem' }}>
           <div>
-            <span className="badge badge-ocean" style={{ marginBottom: '0.3rem' }}>SECURITY & CLOUD DB INTEGRATION</span>
-            <h3 style={{ color: '#0B4769', margin: 0 }}>👑 MC Manual Approval & Database Connector</h3>
+            <span className="badge badge-ocean" style={{ marginBottom: '0.3rem' }}>SECURITY & ACCESS GOVERNANCE</span>
+            <h3 style={{ color: '#0B4769', margin: 0 }}>👑 Resident Verification & Role Management</h3>
           </div>
-          <span className="badge badge-amber" style={{ fontWeight: 800 }}>STRICT ROLE ENFORCEMENT ACTIVE</span>
+          <span className="badge badge-amber" style={{ fontWeight: 800 }}>STRICT ROLE CONTROLS ENFORCED</span>
         </div>
 
-        <div className="grid-2" style={{ gap: '1rem', fontSize: '0.85rem' }}>
-          {/* Rule Enforcement Note */}
-          <div style={{ background: '#FFF', padding: '1rem', borderRadius: '8px', border: '1px solid #CBD5E1' }}>
-            <h4 style={{ color: '#031D34', marginBottom: '0.5rem' }}>🔒 Strict Resident vs MC Role Controls:</h4>
-            <ul style={{ paddingLeft: '1.25rem', color: '#475569', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-              <li><strong>Tenants:</strong> Automatically verified & restricted to Tenant Resident Portal.</li>
-              <li><strong>Owners:</strong> Automatically verified & restricted to Owner Resident Portal.</li>
-              <li><strong>MC Members:</strong> Cannot be self-assigned. Must be manually added/approved by MC Super Admin.</li>
-            </ul>
-          </div>
-
-          {/* Database Setup Status */}
-          <div style={{ background: '#FFF', padding: '1rem', borderRadius: '8px', border: '1px solid #CBD5E1' }}>
-            <h4 style={{ color: '#0B4769', marginBottom: '0.5rem' }}>🗄️ Database Connection Readiness (Supabase / Firebase):</h4>
-            <p style={{ color: '#475569', fontSize: '0.82rem', marginBottom: '0.5rem' }}>
-              To sync all 400 villas live across mobile devices, connect your free Supabase or Firebase PostgreSQL database credentials below:
-            </p>
-            <div style={{ background: '#031D34', color: '#E9BB76', padding: '0.5rem 0.75rem', borderRadius: '6px', fontFamily: 'monospace', fontSize: '0.75rem' }}>
-              VITE_SUPABASE_URL = "https://grihasta.supabase.co"<br />
-              VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6..."
-            </div>
-          </div>
+        <div style={{ background: '#FFF', padding: '1rem', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '0.85rem' }}>
+          <h4 style={{ color: '#031D34', marginBottom: '0.5rem' }}>🔒 Layout Access Protocols:</h4>
+          <ul style={{ paddingLeft: '1.25rem', color: '#475569', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+            <li><strong>Resident Tenants:</strong> Verified & restricted to Tenant Resident Portal.</li>
+            <li><strong>Resident Owners:</strong> Verified & granted Owner Resident Portal features.</li>
+            <li><strong>MC Committee Members:</strong> Require manual authorization by Management Committee Super Admin.</li>
+          </ul>
         </div>
       </div>
     </div>
