@@ -57,16 +57,28 @@ export const DbConnector = {
     const cleanId = identifier.trim().toLowerCase();
     const cleanPass = passwordInput.trim();
 
-    // 1. Temp MC credentials: test@test.com / test
-    if ((cleanId === 'test@test.com' || cleanId === 'test') && cleanPass === 'test') {
+    // 1. Primary MC Super Admin Credentials: sadish.sugumaran@gmail.com / Sadish@1208
+    if ((cleanId === 'sadish.sugumaran@gmail.com' || cleanId === 'sadish') && cleanPass === 'Sadish@1208') {
+      const session = { loggedIn: true, role: 'MC_ADMIN' as UserRole, email: 'sadish.sugumaran@gmail.com' };
+      localStorage.setItem('grihasta_logged_in_session_v1', JSON.stringify(session));
       return {
         success: true,
         roleAssigned: 'MC_ADMIN',
-        message: '✅ Authenticated as Management Committee Admin.'
+        message: '✅ Authenticated as Primary MC Super Admin (Sadish Sugumaran).'
       };
     }
 
-    // 2. Strict Rule: MC Admin and MC Member roles CANNOT be self-assigned
+    // 2. Check registered user password
+    const savedPass = DbConnector.getUserPassword(cleanId);
+    if (savedPass && savedPass !== cleanPass) {
+      return {
+        success: false,
+        roleAssigned: 'RESIDENT_OWNER',
+        message: '❌ Invalid Password. If you forgot your password, please submit a Password Reset Request.'
+      };
+    }
+
+    // 3. Strict Rule: MC Admin and MC Member roles CANNOT be self-assigned
     if (requestedRole === 'MC_ADMIN' || requestedRole === 'MC_MEMBER') {
       const approvedMCUsers = JSON.parse(localStorage.getItem('grihasta_approved_mc_users') || '[]');
       const isApproved = approvedMCUsers.some((u: any) => 
@@ -75,13 +87,16 @@ export const DbConnector = {
         (u.villaNumber && u.villaNumber.toLowerCase() === cleanId)
       );
 
-      if (!isApproved && cleanId !== '9900015844') {
+      if (!isApproved) {
         return {
           success: false,
           roleAssigned: 'RESIDENT_OWNER',
-          message: '⛔ Security Restriction: MC Member privileges cannot be self-assigned. Your request has been sent to MC Super Admin for manual approval.'
+          message: '⛔ Security Restriction: MC Member privileges require approval from Primary MC Admin (sadish.sugumaran@gmail.com).'
         };
       }
+
+      const session = { loggedIn: true, role: requestedRole, email: cleanId };
+      localStorage.setItem('grihasta_logged_in_session_v1', JSON.stringify(session));
       return {
         success: true,
         roleAssigned: requestedRole,
@@ -89,19 +104,13 @@ export const DbConnector = {
       };
     }
 
-    // 3. Verify registered password if available
-    const savedPass = DbConnector.getUserPassword(cleanId);
-    if (savedPass && savedPass !== cleanPass) {
-      return {
-        success: false,
-        roleAssigned: 'RESIDENT_OWNER',
-        message: '❌ Invalid Password. If you forgot your password, please request an MC Password Reset.'
-      };
-    }
+    const assignedRole = requestedRole === 'RESIDENT_TENANT' ? 'RESIDENT_TENANT' : 'RESIDENT_OWNER';
+    const session = { loggedIn: true, role: assignedRole, email: cleanId };
+    localStorage.setItem('grihasta_logged_in_session_v1', JSON.stringify(session));
 
     return {
       success: true,
-      roleAssigned: requestedRole === 'RESIDENT_TENANT' ? 'RESIDENT_TENANT' : 'RESIDENT_OWNER',
+      roleAssigned: assignedRole,
       message: '✅ Signed in successfully.'
     };
   },

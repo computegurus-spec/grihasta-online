@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Lock, Mail, KeyRound, CheckCircle2, Zap, User, Phone, Home, ArrowRight, UserPlus, LogIn, MapPin } from 'lucide-react';
+import { X, Lock, Mail, KeyRound, CheckCircle2, User, Phone, Home, ArrowRight, UserPlus, LogIn, MapPin } from 'lucide-react';
 import { DbConnector } from '../services/dbConnector';
 import { getLaneForVillaNumber } from '../utils/laneMapping';
 import type { UserRole } from '../types';
@@ -189,16 +189,6 @@ export const LoginModal: React.FC<Props> = ({ isOpen, onClose, onLoginSuccess })
           {/* TAB 1: SIGN IN */}
           {activeTab === 'signin' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
-              {/* Credentials Note */}
-              <div style={{ background: '#FEF9C3', border: '1px solid #FDE047', borderRadius: '8px', padding: '0.65rem 0.85rem', fontSize: '0.8rem', color: '#854D0E' }}>
-                <div style={{ fontWeight: 800, color: '#713F12', marginBottom: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                  <Zap size={14} style={{ color: '#D97706' }} /> MC Admin Test Login:
-                </div>
-                <div>
-                  Email: <strong>test@test.com</strong> | Password: <strong>test</strong>
-                </div>
-              </div>
-
               <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
                 <div className="form-group" style={{ marginBottom: 0 }}>
                   <label style={{ fontSize: '0.8rem', color: '#031D34', fontWeight: 700 }}>
@@ -207,7 +197,7 @@ export const LoginModal: React.FC<Props> = ({ isOpen, onClose, onLoginSuccess })
                   <input
                     type="text"
                     required
-                    placeholder="resident@grihasta.online or test@test.com"
+                    placeholder="sadish.sugumaran@gmail.com or registered mobile"
                     className="form-control"
                     style={{ fontSize: '0.85rem', padding: '0.45rem 0.65rem' }}
                     value={email}

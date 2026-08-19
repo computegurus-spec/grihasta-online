@@ -19,18 +19,36 @@ import { Module09_CommunitySocial } from './components/Module09_CommunitySocial'
 import { TreePine, BookOpen } from 'lucide-react';
 
 export function App() {
-  const [showLanding, setShowLanding] = useState<boolean>(true);
-  const [activeRole, setActiveRole] = useState<UserRole>('MC_ADMIN');
+  const [session, setSession] = useState<{ loggedIn: boolean; role: UserRole } | null>(() => {
+    try {
+      const saved = localStorage.getItem('grihasta_logged_in_session_v1');
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) {
+      return null;
+    }
+  });
+
+  const [showLanding, setShowLanding] = useState<boolean>(!session?.loggedIn);
+  const [activeRole, setActiveRole] = useState<UserRole>(session?.role || 'MC_ADMIN');
   const [activeModule, setActiveModule] = useState<number>(1);
   const [isManualOpen, setIsManualOpen] = useState<boolean>(false);
   const [isAccessRequestOpen, setIsAccessRequestOpen] = useState<boolean>(false);
 
-  // Show landing page first
+  const handleSignOut = () => {
+    localStorage.removeItem('grihasta_logged_in_session_v1');
+    setSession(null);
+    setShowLanding(true);
+  };
+
+  // Show landing page if not logged in
   if (showLanding) {
     return (
       <>
         <LandingPage onEnterPortal={(role) => {
-          if (role) setActiveRole(role);
+          if (role) {
+            setActiveRole(role);
+            localStorage.setItem('grihasta_logged_in_session_v1', JSON.stringify({ loggedIn: true, role }));
+          }
           setShowLanding(false);
         }} />
       </>
@@ -42,13 +60,16 @@ export function App() {
       {/* Top Navbar & Role Bar */}
       <Navbar
         activeRole={activeRole}
-        setActiveRole={setActiveRole}
+        setActiveRole={(newRole) => {
+          setActiveRole(newRole);
+          localStorage.setItem('grihasta_logged_in_session_v1', JSON.stringify({ loggedIn: true, role: newRole }));
+        }}
         activeModule={activeModule}
         setActiveModule={setActiveModule}
         onOpenManual={() => setIsManualOpen(true)}
         onGoHome={() => setShowLanding(true)}
         onOpenRequestAccess={() => setIsAccessRequestOpen(true)}
-        onSignOut={() => setShowLanding(true)}
+        onSignOut={handleSignOut}
       />
 
       {/* Main Container */}
