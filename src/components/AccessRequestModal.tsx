@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { X, Send, ShieldCheck, CheckCircle2, User, Phone, Home, FileText } from 'lucide-react';
+import { X, Send, ShieldCheck, CheckCircle2, User, Phone, Home, FileText, MapPin } from 'lucide-react';
 import { DbConnector } from '../services/dbConnector';
+import { getLaneForVillaNumber } from '../utils/laneMapping';
 import type { UserRole } from '../types';
 
 interface Props {
@@ -11,6 +12,7 @@ interface Props {
 export const AccessRequestModal: React.FC<Props> = ({ isOpen, onClose }) => {
   const [name, setName] = useState('');
   const [mobile, setMobile] = useState('');
+  const [laneNumber, setLaneNumber] = useState('Lane 1');
   const [villaNumber, setVillaNumber] = useState('');
   const [occupancyType, setOccupancyType] = useState<'Owner' | 'Tenant'>('Owner');
   const [requestedRole, setRequestedRole] = useState<UserRole>('RESIDENT_OWNER');
@@ -21,11 +23,12 @@ export const AccessRequestModal: React.FC<Props> = ({ isOpen, onClose }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !mobile || !villaNumber) return;
+    if (!name || !mobile || !villaNumber || !laneNumber) return;
 
     DbConnector.submitMcApprovalRequest({
       name,
       mobile,
+      laneNumber,
       villaNumber,
       occupancyType,
       requestedRole
@@ -38,6 +41,7 @@ export const AccessRequestModal: React.FC<Props> = ({ isOpen, onClose }) => {
     setSubmitted(false);
     setName('');
     setMobile('');
+    setLaneNumber('Lane 1');
     setVillaNumber('');
     setNotes('');
     onClose();
@@ -62,7 +66,7 @@ export const AccessRequestModal: React.FC<Props> = ({ isOpen, onClose }) => {
               <CheckCircle2 size={54} style={{ color: '#16A34A' }} />
               <h3 style={{ color: '#031D34' }}>Access Request Submitted!</h3>
               <p style={{ fontSize: '0.9rem', color: '#475569', maxWidth: '420px', lineHeight: 1.5 }}>
-                Thank you, <strong>{name}</strong>. Your verification request for <strong>Villa #{villaNumber}</strong> has been routed to the Grihasta Management Committee (MC).
+                Thank you, <strong>{name}</strong>. Your verification request for <strong>{laneNumber} — Villa #{villaNumber}</strong> has been routed to the Grihasta Management Committee (MC).
               </p>
               <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '8px', padding: '0.85rem 1rem', fontSize: '0.85rem', color: '#166534', width: '100%' }}>
                 ⚡ An MC Member will review your details and approve your portal role shortly. You will receive an SMS notification upon approval.
@@ -74,7 +78,7 @@ export const AccessRequestModal: React.FC<Props> = ({ isOpen, onClose }) => {
           ) : (
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
               <div style={{ background: '#E0F2FE', padding: '0.85rem 1rem', borderRadius: '8px', border: '1px solid #7DD3FC', fontSize: '0.85rem', color: '#075985' }}>
-                📝 <strong>MC Verification Flow:</strong> Submit your details below. Existing Management Committee (MC) members will verify your villa plot details and approve your account.
+                📝 <strong>MC Verification Flow:</strong> Submit your resident details below including your explicit Lane Number. Existing Management Committee (MC) members will verify your details and approve your account.
               </div>
 
               {/* Name & Mobile */}
@@ -103,20 +107,46 @@ export const AccessRequestModal: React.FC<Props> = ({ isOpen, onClose }) => {
                 </div>
               </div>
 
-              {/* Villa Number & Occupancy */}
+              {/* Lane Number & Villa Number */}
               <div className="grid-2" style={{ gap: '0.85rem' }}>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label><MapPin size={14} style={{ display: 'inline', marginRight: '4px' }} /> Select Lane Number *</label>
+                  <select
+                    className="form-control"
+                    value={laneNumber}
+                    onChange={(e) => setLaneNumber(e.target.value)}
+                    required
+                  >
+                    {Array.from({ length: 15 }, (_, i) => `Lane ${i + 1}`).map((lane, i) => (
+                      <option key={lane} value={lane}>
+                        {lane} {lane === 'Lane 15' ? '(Plots 351–400)' : `(Plots ${i * 25 + 1}–${(i + 1) * 25})`}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
                 <div className="form-group" style={{ marginBottom: 0 }}>
                   <label><Home size={14} style={{ display: 'inline', marginRight: '4px' }} /> Villa / Plot Number *</label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Plot 42 or Villa 105"
+                    placeholder="e.g. Plot 42 or Villa 306"
                     className="form-control"
                     value={villaNumber}
-                    onChange={(e) => setVillaNumber(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setVillaNumber(val);
+                      if (val) {
+                        const autoLane = getLaneForVillaNumber(val);
+                        setLaneNumber(autoLane);
+                      }
+                    }}
                   />
                 </div>
+              </div>
 
+              {/* Occupancy & Requested Role */}
+              <div className="grid-2" style={{ gap: '0.85rem' }}>
                 <div className="form-group" style={{ marginBottom: 0 }}>
                   <label>Occupancy Status *</label>
                   <select
@@ -133,20 +163,20 @@ export const AccessRequestModal: React.FC<Props> = ({ isOpen, onClose }) => {
                     <option value="Tenant">Resident Tenant (Rented)</option>
                   </select>
                 </div>
-              </div>
 
-              {/* Requested Role */}
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label>Requested Portal Role Access</label>
-                <select
-                  className="form-control"
-                  value={requestedRole}
-                  onChange={(e) => setRequestedRole(e.target.value as UserRole)}
-                >
-                  <option value="RESIDENT_OWNER">🏡 Resident Owner (Standard Owner Access)</option>
-                  <option value="RESIDENT_TENANT">🔑 Resident Tenant (Standard Tenant Access)</option>
-                  <option value="MC_MEMBER">👑 MC Committee Member (Requires MC Super Admin Approval)</option>
-                </select>
+                {/* Requested Role */}
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label>Requested Portal Role Access</label>
+                  <select
+                    className="form-control"
+                    value={requestedRole}
+                    onChange={(e) => setRequestedRole(e.target.value as UserRole)}
+                  >
+                    <option value="RESIDENT_OWNER">🏡 Resident Owner (Standard Owner Access)</option>
+                    <option value="RESIDENT_TENANT">🔑 Resident Tenant (Standard Tenant Access)</option>
+                    <option value="MC_MEMBER">👑 MC Committee Member (Requires MC Super Admin Approval)</option>
+                  </select>
+                </div>
               </div>
 
               {/* Additional Notes */}

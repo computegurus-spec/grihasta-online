@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { X, Lock, Mail, KeyRound, CheckCircle2, Zap, User, Phone, Home, ShieldCheck, ArrowRight, UserPlus, LogIn } from 'lucide-react';
+import { X, Lock, Mail, KeyRound, CheckCircle2, Zap, User, Phone, Home, ShieldCheck, ArrowRight, UserPlus, LogIn, MapPin } from 'lucide-react';
 import { DbConnector } from '../services/dbConnector';
+import { getLaneForVillaNumber } from '../utils/laneMapping';
 import type { UserRole } from '../types';
 
 interface Props {
@@ -21,6 +22,7 @@ export const LoginModal: React.FC<Props> = ({ isOpen, onClose, onLoginSuccess })
   // First-time Registration state
   const [regName, setRegName] = useState('');
   const [regMobile, setRegMobile] = useState('');
+  const [regLane, setRegLane] = useState('Lane 1');
   const [regVilla, setRegVilla] = useState('');
   const [regOccupancy, setRegOccupancy] = useState<'Owner' | 'Tenant'>('Owner');
   const [regSubmitted, setRegSubmitted] = useState(false);
@@ -66,11 +68,12 @@ export const LoginModal: React.FC<Props> = ({ isOpen, onClose, onLoginSuccess })
 
   const handleRegisterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!regName || !regMobile || !regVilla) return;
+    if (!regName || !regMobile || !regVilla || !regLane) return;
 
     DbConnector.submitMcApprovalRequest({
       name: regName,
       mobile: regMobile,
+      laneNumber: regLane,
       villaNumber: regVilla,
       occupancyType: regOccupancy,
       requestedRole: regOccupancy === 'Owner' ? 'RESIDENT_OWNER' : 'RESIDENT_TENANT'
@@ -86,6 +89,7 @@ export const LoginModal: React.FC<Props> = ({ isOpen, onClose, onLoginSuccess })
     setSuccessMsg('');
     setRegName('');
     setRegMobile('');
+    setRegLane('Lane 1');
     setRegVilla('');
     setRegSubmitted(false);
     onClose();
@@ -258,7 +262,7 @@ export const LoginModal: React.FC<Props> = ({ isOpen, onClose, onLoginSuccess })
                   <CheckCircle2 size={50} style={{ color: '#16A34A' }} />
                   <h4 style={{ color: '#031D34', margin: 0 }}>Registration Request Sent!</h4>
                   <p style={{ fontSize: '0.85rem', color: '#475569', lineHeight: 1.5 }}>
-                    Thank you <strong>{regName}</strong>. Your registration details for <strong>{regVilla}</strong> have been submitted to the Management Committee for verification.
+                    Thank you <strong>{regName}</strong>. Your registration details for <strong>{regLane} — {regVilla}</strong> have been submitted to the Management Committee for verification.
                   </p>
                   <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', padding: '0.75rem', borderRadius: '6px', fontSize: '0.8rem', color: '#166534', width: '100%' }}>
                     An MC member will approve your account shortly.
@@ -270,7 +274,7 @@ export const LoginModal: React.FC<Props> = ({ isOpen, onClose, onLoginSuccess })
               ) : (
                 <form onSubmit={handleRegisterSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
                   <div style={{ background: '#E0F2FE', padding: '0.65rem 0.85rem', borderRadius: '6px', border: '1px solid #7DD3FC', fontSize: '0.8rem', color: '#075985' }}>
-                    📝 Fill out your resident details to register your villa.
+                    📝 Fill out your resident details including your explicit Lane Number to register your villa.
                   </div>
 
                   <div className="form-group" style={{ marginBottom: 0 }}>
@@ -305,6 +309,25 @@ export const LoginModal: React.FC<Props> = ({ isOpen, onClose, onLoginSuccess })
 
                   <div className="form-group" style={{ marginBottom: 0 }}>
                     <label style={{ fontSize: '0.8rem', color: '#031D34', fontWeight: 700 }}>
+                      <MapPin size={13} style={{ display: 'inline', marginRight: '4px' }} /> Select Lane Number *
+                    </label>
+                    <select
+                      className="form-control"
+                      style={{ fontSize: '0.85rem', padding: '0.45rem 0.65rem' }}
+                      value={regLane}
+                      onChange={(e) => setRegLane(e.target.value)}
+                      required
+                    >
+                      {Array.from({ length: 15 }, (_, i) => `Lane ${i + 1}`).map((lane) => (
+                        <option key={lane} value={lane}>
+                          {lane}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label style={{ fontSize: '0.8rem', color: '#031D34', fontWeight: 700 }}>
                       <Home size={13} style={{ display: 'inline', marginRight: '4px' }} /> Villa / Plot Number *
                     </label>
                     <input
@@ -314,7 +337,14 @@ export const LoginModal: React.FC<Props> = ({ isOpen, onClose, onLoginSuccess })
                       className="form-control"
                       style={{ fontSize: '0.85rem', padding: '0.45rem 0.65rem' }}
                       value={regVilla}
-                      onChange={(e) => setRegVilla(e.target.value)}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setRegVilla(val);
+                        if (val) {
+                          const autoLane = getLaneForVillaNumber(val);
+                          setRegLane(autoLane);
+                        }
+                      }}
                     />
                   </div>
 
@@ -347,3 +377,4 @@ export const LoginModal: React.FC<Props> = ({ isOpen, onClose, onLoginSuccess })
     </div>
   );
 };
+

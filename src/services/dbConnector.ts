@@ -1,11 +1,13 @@
 import { StorageEngine } from './storage';
 import { getLaneForVillaNumber } from '../utils/laneMapping';
+import { supabase } from './supabaseClient';
 import type { UserRole } from '../types';
 
 export interface PendingUserApproval {
   id: string;
   name: string;
   mobile: string;
+  laneNumber: string;
   villaNumber: string;
   requestedRole: UserRole;
   occupancyType: 'Owner' | 'Tenant';
@@ -95,16 +97,71 @@ export const DbConnector = {
     }
   },
 
-  submitMcApprovalRequest: (req: Omit<PendingUserApproval, 'id' | 'submittedAt' | 'status'>) => {
+  /**
+   * Completely purges all existing registration requests and approved MC lists
+   */
+  clearAllRegistrations: () => {
+    try {
+      localStorage.removeItem(PENDING_APPROVALS_KEY);
+      localStorage.removeItem('grihasta_approved_mc_users');
+      console.log('All existing registrations purged.');
+    } catch (e) {
+      console.error('Failed to purge registrations', e);
+    }
+  },
+
+  submitMcApprovalRequest: (req: {
+    name: string;
+    mobile: string;
+    laneNumber?: string;
+    villaNumber: string;
+    occupancyType: 'Owner' | 'Tenant';
+    requestedRole: UserRole;
+  }) => {
     const list = DbConnector.getPendingApprovals();
+    const laneNumber = req.laneNumber || getLaneForVillaNumber(req.villaNumber);
+
     const newItem: PendingUserApproval = {
-      ...req,
       id: `appr-${Date.now()}`,
+      name: req.name,
+      mobile: req.mobile,
+      laneNumber,
+      villaNumber: req.villaNumber,
+      occupancyType: req.occupancyType,
+      requestedRole: req.requestedRole,
       submittedAt: new Date().toISOString().split('T')[0],
       status: 'Pending'
     };
+
     list.unshift(newItem);
     localStorage.setItem(PENDING_APPROVALS_KEY, JSON.stringify(list));
+
+    // Async sync to Supabase database
+    (async () => {
+      try {
+        const { error } = await supabase
+          .from('access_requests')
+          .insert({
+            id: newItem.id,
+            name: newItem.name,
+            mobile: newItem.mobile,
+            lane_number: newItem.laneNumber,
+            villa_number: newItem.villaNumber,
+            occupancy_type: newItem.occupancyType,
+            requested_role: newItem.requestedRole,
+            status: newItem.status,
+            submitted_at: newItem.submittedAt
+          });
+        if (error) {
+          console.warn('Supabase cloud insert notice (table access_requests may need schema init):', error.message);
+        } else {
+          console.log('Successfully synced registration request to Supabase cloud!');
+        }
+      } catch (err: any) {
+        console.warn('Supabase sync catch:', err);
+      }
+    })();
+
     return newItem;
   },
 
@@ -117,7 +174,7 @@ export const DbConnector = {
 
       // Add to approved MC registry
       const approved = JSON.parse(localStorage.getItem('grihasta_approved_mc_users') || '[]');
-      approved.push({ mobile: item.mobile, villaNumber: item.villaNumber, role: item.requestedRole });
+      approved.push({ mobile: item.mobile, villaNumber: item.villaNumber, laneNumber: item.laneNumber, role: item.requestedRole });
       localStorage.setItem('grihasta_approved_mc_users', JSON.stringify(approved));
 
       // Synchronize with Villa Master Directory
@@ -125,7 +182,10 @@ export const DbConnector = {
       const cleanNum = item.villaNumber.replace(/[^0-9]/g, '');
       const existing = flats.find(f => f.flatNumber === item.villaNumber || f.flatNumber.includes(cleanNum));
 
+      const laneName = item.laneNumber || getLaneForVillaNumber(item.villaNumber);
+
       if (existing) {
+        existing.block = laneName;
         if (item.occupancyType === 'Owner') {
           existing.ownerName = item.name;
           existing.ownerPhone = item.mobile;
@@ -136,7 +196,6 @@ export const DbConnector = {
           existing.occupancyType = 'Rented';
         }
       } else {
-        const laneName = getLaneForVillaNumber(item.villaNumber);
         flats.push({
           id: `f-${Date.now()}`,
           block: laneName,
@@ -156,6 +215,16 @@ export const DbConnector = {
         });
       }
       StorageEngine.saveFlats(flats);
+
+      // Async update Supabase status
+      (async () => {
+        try {
+          await supabase
+            .from('access_requests')
+            .update({ status: 'Approved' })
+            .eq('id', approvalId);
+        } catch (e) {}
+      })();
     }
   },
 
@@ -165,6 +234,17 @@ export const DbConnector = {
     if (item) {
       item.status = 'Rejected';
       localStorage.setItem(PENDING_APPROVALS_KEY, JSON.stringify(list));
+
+      // Async update Supabase status
+      (async () => {
+        try {
+          await supabase
+            .from('access_requests')
+            .update({ status: 'Rejected' })
+            .eq('id', approvalId);
+        } catch (e) {}
+      })();
     }
   }
 };
+

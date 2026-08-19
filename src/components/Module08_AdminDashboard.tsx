@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StorageEngine } from '../services/storage';
 import { DbConnector } from '../services/dbConnector';
-import { BarChart3, TrendingUp, AlertTriangle, Users, CheckCircle, XCircle, UserCheck } from 'lucide-react';
+import { BarChart3, TrendingUp, AlertTriangle, Users, CheckCircle, XCircle, UserCheck, Trash2, MapPin } from 'lucide-react';
 
 export const Module08_AdminDashboard: React.FC = () => {
   const flats = StorageEngine.getFlats();
@@ -12,15 +12,7 @@ export const Module08_AdminDashboard: React.FC = () => {
 
   // Pending Access Requests state
   const [approvals, setApprovals] = useState(() => {
-    const list = DbConnector.getPendingApprovals();
-    if (list.length === 0) {
-      // Sample seed requests if empty
-      DbConnector.submitMcApprovalRequest({ name: 'Suresh Kumar', mobile: '+91 99000 12345', villaNumber: 'Plot 42', occupancyType: 'Owner', requestedRole: 'RESIDENT_OWNER' });
-      DbConnector.submitMcApprovalRequest({ name: 'Priya Sharma', mobile: '+91 98765 43210', villaNumber: 'Villa 105', occupancyType: 'Tenant', requestedRole: 'RESIDENT_TENANT' });
-      DbConnector.submitMcApprovalRequest({ name: 'Anand Rao (MC Nominee)', mobile: '+91 94440 99887', villaNumber: 'Plot 215', occupancyType: 'Owner', requestedRole: 'MC_MEMBER' });
-      return DbConnector.getPendingApprovals();
-    }
-    return list;
+    return DbConnector.getPendingApprovals();
   });
 
   const handleApprove = (id: string) => {
@@ -31,6 +23,13 @@ export const Module08_AdminDashboard: React.FC = () => {
   const handleReject = (id: string) => {
     DbConnector.rejectMcUser(id);
     setApprovals(DbConnector.getPendingApprovals());
+  };
+
+  const handlePurgeAll = () => {
+    if (window.confirm('Are you sure you want to delete all existing registration requests? This action cannot be undone.')) {
+      DbConnector.clearAllRegistrations();
+      setApprovals([]);
+    }
   };
 
   const totalCollected = dues.filter(d => d.status === 'Paid').reduce((acc, d) => acc + d.amount, 0);
@@ -63,70 +62,96 @@ export const Module08_AdminDashboard: React.FC = () => {
               <UserCheck size={22} style={{ color: '#E9BB76' }} /> ⚡ Pending Resident & MC Access Requests
             </h3>
           </div>
-          <span className="badge badge-ocean" style={{ fontSize: '0.85rem', fontWeight: 800 }}>
-            {pendingCount} Pending Approvals
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+            <button
+              onClick={handlePurgeAll}
+              className="btn btn-sm btn-secondary"
+              style={{ background: '#991B1B', color: '#FFF', border: 'none', padding: '0.35rem 0.75rem', fontSize: '0.78rem', fontWeight: 700 }}
+              title="Delete all existing registration records"
+            >
+              <Trash2 size={13} /> Purge All Registrations
+            </button>
+            <span className="badge badge-ocean" style={{ fontSize: '0.85rem', fontWeight: 800 }}>
+              {pendingCount} Pending Approvals
+            </span>
+          </div>
         </div>
 
-        <div className="table-responsive">
-          <table>
-            <thead>
-              <tr>
-                <th>Applicant Name</th>
-                <th>Mobile</th>
-                <th>Villa / Plot</th>
-                <th>Occupancy & Requested Role</th>
-                <th>Submitted</th>
-                <th>Status</th>
-                <th>MC Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {approvals.map((a) => (
-                <tr key={a.id}>
-                  <td><strong>{a.name}</strong></td>
-                  <td><span style={{ fontSize: '0.8rem', color: '#475569' }}>{a.mobile}</span></td>
-                  <td><span className="badge badge-amber">{a.villaNumber}</span></td>
-                  <td>
-                    <div style={{ fontSize: '0.8rem' }}>
-                      <strong>{a.occupancyType}</strong> ({a.requestedRole})
-                    </div>
-                  </td>
-                  <td><span style={{ fontSize: '0.78rem', color: '#64748B' }}>{a.submittedAt}</span></td>
-                  <td>
-                    <span className={`badge ${a.status === 'Approved' ? 'badge-paid' : a.status === 'Rejected' ? 'badge-overdue' : 'badge-pending'}`}>
-                      {a.status}
-                    </span>
-                  </td>
-                  <td>
-                    {a.status === 'Pending' ? (
-                      <div style={{ display: 'flex', gap: '0.4rem' }}>
-                        <button
-                          onClick={() => handleApprove(a.id)}
-                          className="btn btn-sm btn-primary"
-                          style={{ padding: '0.2rem 0.6rem', fontSize: '0.75rem', background: '#16A34A', border: 'none' }}
-                        >
-                          <CheckCircle size={13} /> Approve
-                        </button>
-                        <button
-                          onClick={() => handleReject(a.id)}
-                          className="btn btn-sm btn-secondary"
-                          style={{ padding: '0.2rem 0.6rem', fontSize: '0.75rem', background: '#991B1B', color: '#FFF', border: 'none' }}
-                        >
-                          <XCircle size={13} /> Reject
-                        </button>
-                      </div>
-                    ) : (
-                      <span style={{ fontSize: '0.75rem', color: '#64748B', fontStyle: 'italic' }}>
-                        {a.status === 'Approved' ? '✅ Verified & Granted' : '❌ Access Declined'}
-                      </span>
-                    )}
-                  </td>
+        {approvals.length === 0 ? (
+          <div style={{ padding: '2rem 1rem', textAlign: 'center', background: '#F8FAFC', borderRadius: '8px', border: '1px dashed #CBD5E1' }}>
+            <UserCheck size={40} style={{ color: '#94A3B8', marginBottom: '0.5rem' }} />
+            <h4 style={{ color: '#475569', margin: '0 0 0.25rem 0' }}>No Pending Access Requests</h4>
+            <p style={{ fontSize: '0.85rem', color: '#64748B', margin: 0 }}>
+              All registrations have been cleared. New resident registration requests will appear here with their explicit Lane Number.
+            </p>
+          </div>
+        ) : (
+          <div className="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Applicant Name</th>
+                  <th>Mobile</th>
+                  <th>Lane Number</th>
+                  <th>Villa / Plot</th>
+                  <th>Occupancy & Requested Role</th>
+                  <th>Submitted</th>
+                  <th>Status</th>
+                  <th>MC Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {approvals.map((a) => (
+                  <tr key={a.id}>
+                    <td><strong>{a.name}</strong></td>
+                    <td><span style={{ fontSize: '0.8rem', color: '#475569' }}>{a.mobile}</span></td>
+                    <td>
+                      <span className="badge badge-teal" style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                        <MapPin size={11} /> {a.laneNumber || 'Lane 1'}
+                      </span>
+                    </td>
+                    <td><span className="badge badge-amber">{a.villaNumber}</span></td>
+                    <td>
+                      <div style={{ fontSize: '0.8rem' }}>
+                        <strong>{a.occupancyType}</strong> ({a.requestedRole})
+                      </div>
+                    </td>
+                    <td><span style={{ fontSize: '0.78rem', color: '#64748B' }}>{a.submittedAt}</span></td>
+                    <td>
+                      <span className={`badge ${a.status === 'Approved' ? 'badge-paid' : a.status === 'Rejected' ? 'badge-overdue' : 'badge-pending'}`}>
+                        {a.status}
+                      </span>
+                    </td>
+                    <td>
+                      {a.status === 'Pending' ? (
+                        <div style={{ display: 'flex', gap: '0.4rem' }}>
+                          <button
+                            onClick={() => handleApprove(a.id)}
+                            className="btn btn-sm btn-primary"
+                            style={{ padding: '0.2rem 0.6rem', fontSize: '0.75rem', background: '#16A34A', border: 'none' }}
+                          >
+                            <CheckCircle size={13} /> Approve
+                          </button>
+                          <button
+                            onClick={() => handleReject(a.id)}
+                            className="btn btn-sm btn-secondary"
+                            style={{ padding: '0.2rem 0.6rem', fontSize: '0.75rem', background: '#991B1B', color: '#FFF', border: 'none' }}
+                          >
+                            <XCircle size={13} /> Reject
+                          </button>
+                        </div>
+                      ) : (
+                        <span style={{ fontSize: '0.75rem', color: '#64748B', fontStyle: 'italic' }}>
+                          {a.status === 'Approved' ? '✅ Verified & Granted' : '❌ Access Declined'}
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Phase 2 Release Readiness Control Banner */}

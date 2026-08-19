@@ -65,6 +65,12 @@ timeline
   - **Password:** `test`
 - Prepared Auth0 SSO adapter for tomorrow's Gmail ID password reset transition.
 
+### 📍 9. Mandatory Lane Number Registration, Purge Registrations, & Supabase Integration
+- **Mandatory Lane Number Selection:** Updated `AccessRequestModal.tsx` and `LoginModal.tsx` to require residents to specify their **Lane Number** (`Lane 1` to `Lane 15`) upon registration.
+- **Auto & Manual Lane Mapping:** System auto-suggests Lane Number based on plot number input while preserving manual dropdown override capability.
+- **Registration Purge Feature:** Added `DbConnector.clearAllRegistrations()` method and a **🗑️ Purge All Registrations** button in MC Admin Dashboard to clear legacy/sample registration records.
+- **Supabase Cloud DB Credentials Setup:** Configured `.env` and `.env.local` with live Supabase credentials (`arcvndfmnqcqdjhmfaeh.supabase.co`), created `supabaseClient.ts`, and added cloud sync handlers to `DbConnector.ts`.
+
 ---
 
 ## 3. Git Commit History Summary
@@ -84,3 +90,5 @@ timeline
 | `98f4e99` | Cleaned up registration info banner text |
 | `410366e` | Architectural fix: Hide Login button when logged in & auto-sync approved users |
 | `46837a2` | Standardized Add Villa form & added top-right notification bell dropdown |
+| `e819b2a` | Added mandatory Lane Number registration selection, Purge Registrations, and Supabase integration |
+
